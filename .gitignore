@@ -4,4 +4,8 @@ HW/16726_s25_hw1-main/data.zip
 # Ignore the entire data folder
 HW/16726_s25_hw1-main/data/
 
-.DS_Store
+*.DS_Store
+
+HW/16726_s25_hw2/results
+HW/16726_s25_hw2/data
+*.zip

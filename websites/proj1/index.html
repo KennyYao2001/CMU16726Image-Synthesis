@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 1 - Colorizing the Prokudin-Gorskii Photo Collection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            text-align: center;
+        }
+        h1, h2 {
+            color: #222;
+        }
+        .content {
+            text-align: left;
+        }
+        .footer {
+            text-align: center;
+            padding: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+        .image-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .image-column {
+            flex: 1;
+            margin: 0 10px;
+            text-align: center;
+        }
+        .image-column img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Project 1</h1>
+    <h2>Colorizing the Prokudin-Gorskii Photo Collection</h2>
+    <h4>Author: Keling Yao</h4>
+    <h4>Andrew ID: kennyy</h4>
+    <div class="content">
+        <h1>1. Overview</h1>
+        <p>This project focuses on colorizing historical black-and-white photos taken by Sergei Mikhailovich Prokudin-Gorskii. The goal is to use image processing techniques to align and combine the three separate color channels—captured using blue, green, and red filters—into a single color image.</p>
+        
+        <h2>2. Approaches</h2>
+        <p>The single channel images are processed and aligned to reconstruct full-color images.</p>
+        <p>I chose Sum of Squared Differences (SSD) as the alignment metric.</p>
+        
+        <h3>2.1 Alignment Process</h3>
+        <ul>
+            <li>The alignment follows a two-step process: first aligning red to green, then blue to green, before stacking the three channels (aligned red, aligned blue, and green) to create the final image.</li>
+            <li>Since most images have similar brightness across all color channels, aligning two channels with a third generally works. However, the Emir image presents a challenge because its green channel has a different brightness level from the other two. To handle this, I used the green channel as the reference and aligned the red and blue channels to it.</li>
+        </ul>
+        
+        <h3>2.2 Single-Scale Alignment</h3>
+        <ul>
+            <li>Initially, I attempted a single-scale alignment approach, which works well for low-resolution images.</li>
+            <li>However, this method is slow and performs poorly on high-resolution images because it computes SSD over all image pixels at once. The abundance of fine details makes it difficult to determine the correct shift.</li>
+        </ul>
+        
+        <h3>2.3 Multi-Scale Pyramid Alignment</h3>
+        <ul>
+            <li>To improve efficiency and accuracy, I implemented a multi-scale pyramid alignment technique:</li>
+            <ol>
+                <li>Downscale the high-resolution image to a tiny version.</li>
+                <li>Compute SSD and shift the image to align.</li>
+                <li>Gradually upscale the image while refining the alignment at each level.</li>
+                <li>Repeat this process until the image is restored to its original size.</li>
+            </ol>
+            <li>This approach improves speed and alignment accuracy, performing well on nearly all images.</li>
+        </ul>
+        
+        <h2>3. Results</h2>
+        
+        <h3>3.1 Single-Scale Alignment (Successful on Low-Res Images)</h3>
+        <p>Example results using single-scale alignment:</p>
+        <div class="image-row">
+            <div class="image-column">
+                <h3>cathedral</h3>
+                <img src="data/single_scale_cathedral.jpg">
+            </div>
+        </div>
+        
+        <h3>3.2 Multi-Scale Pyramid Alignment (Effective for Large Images)</h3>
+        <p>The multi-scale pyramid method efficiently aligns most high-resolution images.</p>
+        <div class="image-row">
+            <div class="image-column">
+                <h3>Cathedral</h3>
+                <img src="data/pyramid_cathedral.jpg" alt="Cathedral">
+            </div>
+            <div class="image-column">
+                <h3>Emir</h3>
+                <img src="data/pyramid_emir_before.jpg" alt="Emir">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h3>Harvesters</h3>
+                <img src="data/pyramid_harvesters.jpg" alt="Harvesters">
+            </div>
+            <div class="image-column">
+                <h3>Icon</h3>
+                <img src="data/pyramid_icon.jpg" alt="Icon">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h3>Lady</h3>
+                <img src="data/pyramid_lady.jpg" alt="Lady">
+            </div>
+            <div class="image-column">
+                <h3>Self Portrait</h3>
+                <img src="data/pyramid_self_portrait.jpg" alt="Self Portrait">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h3>Three Generations</h3>
+                <img src="data/pyramid_three_generations.jpg" alt="Three Generations">
+            </div>
+            <div class="image-column">
+                <h3>Train</h3>
+                <img src="data/pyramid_train.jpg" alt="Train">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h3>Turkmen</h3>
+                <img src="data/pyramid_turkmen.jpg" alt="Turkmen">
+            </div>
+            <div class="image-column">
+                <h3>Village</h3>
+                <img src="data/pyramid_village.jpg" alt="Village">
+            </div>
+        </div>
+        
+        <p>However, the Emir image remained misaligned.</p>
+        <ul>
+            <li>This issue arises because the green channel has a different brightness level from the other two.</li>
+            <li>To correct this, I aligned both the red and blue channels to the green channel instead.</li>
+            <li>The improved aligned Emir image is shown below.</li>
+        </ul>
+        <div class="image-row">
+            <div class="image-column">
+                <h3>Emir Before</h3>
+                <img src="data/pyramid_emir_before.jpg" alt="Emir Before">
+            </div>                
+            <div class="image-column">
+                <h3>Emir After</h3>
+                <img src="data/pyramid_emir.jpg" alt="Emir After">
+            </div>
+        </div>
+
+        <h3>3.3 More results from my own choice</h3>
+        <p>The multi-scale pyramid method work well in my own chosen images from Prokudin-Gorskii Collection.</p>
+        <div class="image-row">
+            <div class="image-column">
+                <h3>Adobe</h3>
+                <img src="data/pyramid_adobe.jpg" alt="Emir Before">
+            </div>                
+            <div class="image-column">
+                <h3>Poliana</h3>
+                <img src="data/pyramid_Poliana.jpg" alt="Emir After">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h3>Grass</h3>
+                <img src="data/pyramid_grass.jpg" alt="Emir Before">
+            </div>                
+        </div>
+
+        <h2>4. Bells & Whistles (Extra Credit)</h2>
+        
+        <h3>4.1 PyTorch Reimplementation (2 points)</h3>
+        <p>I reimplemented the alignment process using PyTorch tensors for improved computational efficiency. Check the implemented code in the codespace.</p>
+
+        
+        <h3>4.2 Automatic Contrast Adjustment (2 points)</h3>
+        <p>I applied automatic contrast enhancement by:</p>
+        <ul>
+            <li>Rescaling brightness so that the minimum value is 0 and the maximum is 1.</li>
+            <li>Adjusting brightness dynamically using a scaling factor of 1.2, increasing values above the average while decreasing those below.</li>
+            <li>Applying adjustments differently across color channels based on their brightness levels.</li>
+            <li>Clipping values to ensure they remain within the range.</li>
+        </ul>
+        <p>Here are the images with automatic contrast enhancement applied:</p>
+        <div class="image-row">
+            <div class="image-column">
+                <h3>Cathedral</h3>
+                <img src="data/pyramid_cathedral.jpg" alt="Cathedral">
+            </div>
+            <div class="image-column">
+                <h3>Cathedral Contrast</h3>
+                <img src="data/pyramid_cathedral_contrast.jpg" alt="Cathedral Contrast">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h3>Emir</h3>
+                <img src="data/pyramid_emir.jpg" alt="Emir">
+            </div>
+            <div class="image-column">
+                <h3>Emir Contrast</h3>
+                <img src="data/pyramid_emir_contrast.jpg" alt="Emir Contrast">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h3>Harvesters</h3>
+                <img src="data/pyramid_harvesters.jpg" alt="Harvesters">
+            </div>
+            <div class="image-column">
+                <h3>Harvesters Contrast</h3>
+                <img src="data/pyramid_harvesters_contrast.jpg" alt="Harvesters Contrast">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h3>Icon</h3>
+                <img src="data/pyramid_icon.jpg" alt="Icon">
+            </div>
+            <div class="image-column">
+                <h3>Icon Contrast</h3>
+                <img src="data/pyramid_icon_contrast.jpg" alt="Icon Contrast">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h3>Lady</h3>
+                <img src="data/pyramid_lady.jpg" alt="Lady">
+            </div>
+            <div class="image-column">
+                <h3>Lady Contrast</h3>
+                <img src="data/pyramid_lady_contrast.jpg" alt="Lady Contrast">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h3>Self Portrait</h3>
+                <img src="data/pyramid_self_portrait.jpg" alt="Self Portrait">
+            </div>
+            <div class="image-column">
+                <h3>Self Portrait Contrast</h3>
+                <img src="data/pyramid_self_portrait_contrast.jpg" alt="Self Portrait Contrast">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h3>Three Generations</h3>
+                <img src="data/pyramid_three_generations.jpg" alt="Three Generations">
+            </div>
+            <div class="image-column">
+                <h3>Three Generations Contrast</h3>
+                <img src="data/pyramid_three_generations_contrast.jpg" alt="Three Generations Contrast">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h3>Train</h3>
+                <img src="data/pyramid_train.jpg" alt="Train">
+            </div>
+            <div class="image-column">
+                <h3>Train Contrast</h3>
+                <img src="data/pyramid_train_contrast.jpg" alt="Train Contrast">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h3>Turkmen</h3>
+                <img src="data/pyramid_turkmen.jpg" alt="Turkmen">
+            </div>
+            <div class="image-column">
+                <h3>Turkmen Contrast</h3>
+                <img src="data/pyramid_turkmen_contrast.jpg" alt="Turkmen Contrast">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h3>Village</h3>
+                <img src="data/pyramid_village.jpg" alt="Village">
+            </div>
+            <div class="image-column">
+                <h3>Village Contrast</h3>
+                <img src="data/pyramid_village_contrast.jpg" alt="Village Contrast">
+            </div>
+        </div>
+        
+        
+    </div>
+</div>
+
+<div class="footer">
+    &copy; 2024 Kenny Yao | Course 16726 | Image-Based Synthesis
+</div>
+
+</body>
+</html>

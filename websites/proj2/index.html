@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 2 - Gradient Domain Fusion</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            text-align: center;
+        }
+        h1, h2 {
+            color: #222;
+        }
+        .content {
+            text-align: left;
+        }
+        .footer {
+            text-align: center;
+            padding: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+        .image-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .image-column {
+            flex: 1;
+            margin: 0 10px;
+            text-align: center;
+        }
+        .image-column img {
+            max-width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Project 2</h1>
+    <h2>Gradient Domain Fusion</h2>
+    <h4>Author: Keling Yao</h4>
+    <h4>Andrew ID: kennyy</h4>
+    <div class="content">
+        <h2>1. Overview</h2>
+        <p>
+            This project explores gradient-domain processing, a simple technique with a broad set of applications including blending, tone-mapping, and non-photorealistic rendering. The primary goal is to seamlessly blend an object or texture from a source image into a target image. While a simple copy-paste approach would create noticeable seams even with well-matched backgrounds, gradient-domain processing offers a more sophisticated solution that preserves visual quality.
+        </p>
+        
+        <h2>2. Approaches</h2>
+        <p>
+            The core approach leverages the insight that human perception is more sensitive to image gradients than absolute intensity values. We formulate the problem as a least squares optimization where we solve for new intensity values 'v' within the source region 'S'. Given source image intensities 's' and target image intensities 't', the objective function is:
+        </p>
+        
+        <p style="text-align: center;">
+            <em>v = argmin<sub>v</sub> Σ<sub>i∈S,j∈N∩S</sub>((v<sub>i</sub> - v<sub>j</sub>) - (s<sub>i</sub> - s<sub>j</sub>))² + Σ<sub>i∈S,j∈N∩∁S</sub>((v<sub>i</sub> - t<sub>j</sub>) - (s<sub>i</sub> - s<sub>j</sub>))²</em>
+        </p>
+        
+        <p>
+            Here, 'i' represents pixels in the source region 'S', and 'j' represents 4-neighbor pixels of 'i'. The first summation handles gradients between variable pixels, while the second summation addresses gradients between variable pixels and fixed target region pixels.
+        </p>
+
+        <p>
+            The implementation involves several key steps:
+        </p>
+        <ol>
+            <li><strong>Matrix Construction:</strong> We build a sparse matrix A and vector b to solve the system Ax = b. For each pixel in the source region, we create equations involving its 4-connected neighbors.</li>
+            
+            <li><strong>Gradient Preservation:</strong> For each pixel:
+                <ul>
+                    <li>We set a coefficient of 4 for the current pixel</li>
+                    <li>Set -1 for each neighboring pixel within the mask</li>
+                    <li>Add background values to b for neighbors outside the mask</li>
+                </ul>
+            </li>
+            
+            <li><strong>Channel Processing:</strong> The blending is performed independently for each color channel (R,G,B), solving a separate system of equations for each.</li>
+            
+            <li><strong>Solution:</strong> The system is solved using sparse least squares (LSQR), which efficiently handles the large, sparse matrices typical in image processing.</li>
+        </ol>
+
+        <p>
+            This method, known as Poisson blending, allows for seamless integration while permitting intensity adjustments that maintain the visual characteristics of the source content. The implementation also includes an extension for mixed gradients, where we choose between source and target gradients based on their relative magnitudes.
+        </p>
+        
+        <h2>3. Results</h2>
+        
+        <h3>3.1 Toy Problem</h3>
+        <p>
+            In this example, we compute the x and y gradients from an image <em>s</em>, then use all the gradients, plus one pixel intensity, to reconstruct an image <em>v</em>.
+        </p>
+        <p>
+            Denote the intensity of the source image at (x, y) as <em>s(x,y)</em> and the values of the image to solve for as <em>v(x,y)</em>. For each pixel, we have two objectives:
+        </p>
+        <ol>
+            <li>
+                Minimize 
+                <em>((v(x+1,y)−v(x,y))−(s(x+1,y)−s(x,y)))²</em>, 
+                so the x-gradients of <em>v</em> should closely match the x-gradients of <em>s</em>.
+            </li>
+            <li>
+                Minimize 
+                <em>((v(x,y+1)−v(x,y))−(s(x,y+1)−s(x,y)))²</em>, 
+                so the y-gradients of <em>v</em> should closely match the y-gradients of <em>s</em>.
+            </li>
+        </ol>
+        <p>
+            Note that these could be solved while adding any constant value to <em>v</em>, so we will add one more objective:
+        </p>
+        <p>
+            Minimize 
+            <em>(v(1,1)−s(1,1))²</em>, 
+            ensuring that the top left corners of the two images should be the same color.
+        </p>
+
+        <h4>Result Image:</h4>
+        <div class="image-row">
+            <div class="image-column">
+                <img src="data/toy_result.png" alt="Toy Problem Result">
+            </div>
+        </div>
+
+        <h3>3.2 Poisson Blending</h3>
+        <p>
+            In this blending process, we first select a region from the source image and specify where it should be blended into the target image. The source pixels are directly copied into the target region to create an initial blended image. 
+        </p>
+        <p>
+            The final blend result is achieved using Poisson blending, which optimally combines the gradients of the source and target images. This method preserves the texture and color continuity, resulting in a more natural appearance. 
+        </p>
+
+
+        <p>The test sample result:</p>
+
+        <div class="image-row">
+            <div class="image-column">
+                <h4>Source Image:</h4>
+                <img src="data/source_01.jpg" alt="Source Image">
+            </div>
+            <div class="image-column">
+                <h4>Target Image:</h4>
+                <img src="data/target_01.jpg" alt="Target Image">
+            </div>
+        </div>
+                <div class="image-row">
+                <div class="image-column">
+                    <img src="data/test_poisson_blending.png" alt="Poisson Blend Result">
+                </div>
+            </div>
+
+        </h4>My favorite blending result(using my own image):</h4>
+
+        <div class="image-row">
+            <div class="image-column">
+                <h4>Source Image:</h4>
+                <img src="data/ll.png" alt="Source Image">
+            </div>
+            <div class="image-column">
+                <h4>Target Image:</h4>
+                <img src="data/77_r.jpg" alt="Target Image">
+            </div>
+        </div>
+    
+            <div class="image-row">
+                <div class="image-column">
+                    <img src="data/IMG_5691.png" alt="Mixed Blend Result">
+                </div>
+            </div>
+
+        </h4>More examples(using my own image):</h4>
+
+        <div class="image-row">
+            <div class="image-column">
+                <h4>Source Image:</h4>
+                <img src="data/d.jpg" alt="Source Image">
+            </div>
+            <div class="image-column">
+                <h4>Target Image:</h4>
+                <img src="data/NewYork.jpg" alt="Target Image">
+            </div>
+        </div>
+    
+            <div class="image-row">
+                <div class="image-column">
+                    <img src="data/dinasourOnBY.png" alt="Mixed Blend Result">
+                </div>
+            </div>
+
+        </h4>Failure cases:</h4>
+
+    </p>The source and target images may have different lighting conditions or color tones, leading to noticeable seams or unnatural blending.</p>
+
+        <div class="image-row">
+            <div class="image-column">
+                <h4>Source Image:</h4>
+                <img src="data/light_r.jpg" alt="Source Image">
+            </div>
+            <div class="image-column">
+                <h4>Target Image:</h4>
+                <img src="data/lake_r.jpg" alt="Target Image">
+            </div>
+        </div>
+    
+            <div class="image-row">
+                <div class="image-column">
+                    <img src="data/fail_cases.png" alt="Mixed Blend Result">
+                </div>
+            </div>
+
+
+        <h2>4. Bells & Whistles (Extra Credit)</h2>
+        <h3>4.1 Mixed Gradients</h3>
+    </p>
+        I implemented the mixed gradient technique, which benefits the preservation of the background in the target image. Compared to the Poisson blend result, the mixed blend result looks better because it maintains the textures of the target image. The Poisson blend, on the other hand, still shows visible edges, and the brick texture isn't preserved near the text.
+    </p>
+
+    <div class="image-row">
+        <div class="image-column">
+            <h4>Source Image:</h4>
+            <img src="data/book_mark.jpg" alt="Source Image">
+        </div>
+        <div class="image-column">
+            <h4>Target Image:</h4>
+            <img src="data/garden_r.jpg" alt="Target Image">
+        </div>
+    </div>
+
+        <h4>Result of Mixed Blend Image:</h4>
+        <div class="image-row">
+            <div class="image-column">
+                <img src="data/Mixed_blend_garden.png" alt="Mixed Blend Result">
+            </div>
+        </div>
+
+        <h4>Result of Poisson Image Blend:</h4>
+        <div class="image-row">
+            <div class="image-column">
+                <img src="data/Poisson_blend_garden.png" alt="Poisson Blend Result">
+            </div>
+        </div>
+
+<div class="footer">
+    &copy; 2024 Kenny Yao | Course 16726 | Image-Based Synthesis
+</div>
+
+</body>
+</html>

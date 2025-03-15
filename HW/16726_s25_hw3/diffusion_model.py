@@ -106,7 +106,7 @@ class Unet(nn.Module):
             x = torch.cat((x_self_cond, x), dim=1)
         
         # TODO: time embedding
-        time_embed =
+        time_embed = self.time_layer(time)
 
         # Initial convolution
         x = self.init_conv(x)
@@ -116,16 +116,26 @@ class Unet(nn.Module):
         # TODO: Implement the forward pass for the downsampling blocks
         # Hint: Follow the structure of the defined downsampling blocks in the __init__ function
         for block1, block2, attn, downsample in self.downs:
-            x = ...
+            x = block1(x, time_embed)
+            x = block2(x, time_embed)
+            x = attn(x)
+            h.append(x)
+            x = downsample(x)
 
         # TODO: Implement the forward pass for the middle block
         # Hint: Follow the structure of the defined middle block in the __init__ function
-        x = ...
+        x = self.mid_block1(x, time_embed)
+        x = self.mid_attn(x)
+        x = self.mid_block2(x, time_embed)
 
         # TODO: Implement the forward pass for the upsampling blocks
         # Hint: Follow the structure of the defined upsampling blocks in the __init__ function
         for block1, block2, attn, upsample in self.ups:
-            x = ...
+            x = torch.cat((x, h.pop()), dim=1)
+            x = block1(x, time_embed)
+            x = block2(x, time_embed)
+            x = attn(x)
+            x = upsample(x)
         
 
         # Final residual block
@@ -139,7 +149,7 @@ def beta_schedule(timesteps):
     # Hint: you can make use of torch.linspace
     beta_start = 0.0001
     beta_end = 0.02
-    return ...
+    return torch.linspace(beta_start, beta_end, timesteps)
 
 timesteps = TIMESTEPS
 
@@ -185,7 +195,7 @@ def p_losses(denoise_model, x_start, t, noise=None):
 
     # TODO: get the noisy image from x_start and noise
     # Hint: using q_sample function
-    x_noisy = ... # get noisy image
+    x_noisy = q_sample(x_start, t, noise)
 
     x_self_cond = None
     if denoise_model.self_condition and random.random() < 0.5:
@@ -195,12 +205,12 @@ def p_losses(denoise_model, x_start, t, noise=None):
 
     # TODO: get the predicted noise from the denoise model
     # Hint: using the denoise_model forward call
-    predicted_noise = ... # denoise the generated noisy image
+    predicted_noise = denoise_model(x_noisy, t, x_self_cond)  # denoise the generated noisy image
 
 
     # TODO: calculate the MSE loss using the predicted noise and the noise
     # Hint: using F.mse_loss
-    loss = ...
+    loss = F.mse_loss(predicted_noise, noise)
     
     return loss
 

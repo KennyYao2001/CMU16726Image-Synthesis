@@ -94,7 +94,7 @@ def training_loop(train_dataloader, opts, logger):
 
             # 2. Get loss between loss and predicted loss
             # TODO: calculate the loss using p_losses
-            loss = ...
+            loss = p_losses(U, real_images, t)
 
             if step % 100 == 0:
                 print("Loss:", loss.item())

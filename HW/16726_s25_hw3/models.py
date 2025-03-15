@@ -137,16 +137,17 @@ class CycleGenerator(nn.Module):
         ##   FILL THIS IN: CREATE ARCHITECTURE   ##
         ###########################################
 
-        # 1. Define the encoder part of the generator
-        self.conv1 = 
-        self.conv2 = 
+        # # 1. Define the encoder part of the generator
+        # self.conv1 = 
+        # self.conv2 = 
 
-        # 2. Define the transformation part of the generator
-        self.resnet_block = 
+        # # 2. Define the transformation part of the generator
+        # self.resnet_block = 
 
-        # 3. Define the decoder part of the generator
-        self.up_conv1 = 
-        self.up_conv2 = 
+        # # 3. Define the decoder part of the generator
+        # self.up_conv1 = 
+        # self.up_conv2 = 
+        pass
 
     def forward(self, x):
         """

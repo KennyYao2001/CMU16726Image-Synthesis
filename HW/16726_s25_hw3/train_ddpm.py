@@ -90,8 +90,7 @@ def training_loop(train_dataloader, opts, logger):
             #######################################
 
             # 1. Sample t uniformally for every example in the batch
-            t = torch.randint(low=0, high=opts.denoising_steps, size=(real_images.shape[0],), device=device).long()
-
+            t = torch.randint(0, opts.denoising_steps, (real_images.shape[0],), device=device).long()
             # 2. Get loss between loss and predicted loss
             # TODO: calculate the loss using p_losses
             loss = p_losses(U, real_images, t)

@@ -72,7 +72,7 @@ def create_image_grid(array, ncols=None):
 
     if not ncols:
         ncols = int(np.sqrt(num_images))
-    nrows = int(np.math.floor(num_images / float(ncols)))
+    nrows = int(np.floor(num_images / float(ncols)))
     result = np.zeros(
         (cell_h * nrows, cell_w * ncols, channels),
         dtype=array.dtype

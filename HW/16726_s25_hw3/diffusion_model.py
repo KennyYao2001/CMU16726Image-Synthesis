@@ -114,29 +114,27 @@ class Unet(nn.Module):
         h = []
 
         # TODO: Implement the forward pass for the downsampling blocks
-        # Hint: Follow the structure of the defined downsampling blocks in the __init__ function
         for block1, block2, attn, downsample in self.downs:
             x = block1(x, time_embed)
+            h.append(x)
             x = block2(x, time_embed)
             x = attn(x)
             h.append(x)
             x = downsample(x)
 
         # TODO: Implement the forward pass for the middle block
-        # Hint: Follow the structure of the defined middle block in the __init__ function
         x = self.mid_block1(x, time_embed)
         x = self.mid_attn(x)
         x = self.mid_block2(x, time_embed)
 
         # TODO: Implement the forward pass for the upsampling blocks
-        # Hint: Follow the structure of the defined upsampling blocks in the __init__ function
         for block1, block2, attn, upsample in self.ups:
             x = torch.cat((x, h.pop()), dim=1)
             x = block1(x, time_embed)
+            x = torch.cat((x, h.pop()), dim=1)
             x = block2(x, time_embed)
             x = attn(x)
             x = upsample(x)
-        
 
         # Final residual block
         x = torch.cat((x, r), dim=1)
@@ -146,8 +144,8 @@ class Unet(nn.Module):
     
 def beta_schedule(timesteps):
     # TODO: Implement beta schedule function
-    # Hint: you can make use of torch.linspace
-    beta_start = 0.0001
+    # Linear beta schedule from 1e-4 to 0.02 as in the DDPM paper
+    beta_start = 1e-4
     beta_end = 0.02
     return torch.linspace(beta_start, beta_end, timesteps)
 
@@ -194,7 +192,6 @@ def p_losses(denoise_model, x_start, t, noise=None):
         noise = torch.randn_like(x_start)
 
     # TODO: get the noisy image from x_start and noise
-    # Hint: using q_sample function
     x_noisy = q_sample(x_start, t, noise)
 
     x_self_cond = None
@@ -204,12 +201,9 @@ def p_losses(denoise_model, x_start, t, noise=None):
             x_self_cond.detach_()
 
     # TODO: get the predicted noise from the denoise model
-    # Hint: using the denoise_model forward call
-    predicted_noise = denoise_model(x_noisy, t, x_self_cond)  # denoise the generated noisy image
-
+    predicted_noise = denoise_model(x_noisy, t, x_self_cond)
 
     # TODO: calculate the MSE loss using the predicted noise and the noise
-    # Hint: using F.mse_loss
     loss = F.mse_loss(predicted_noise, noise)
     
     return loss

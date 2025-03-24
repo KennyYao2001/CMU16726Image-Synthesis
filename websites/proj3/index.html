@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 3 - Cats Generator Playground</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            line-height: 1.6;
+            font-size: 17px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 30px;
+            background: white;
+            box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            text-align: center;
+        }
+        h1, h2, h3 {
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        h1 {
+            color: #2c3e50;
+            font-size: 2.6em;
+            margin-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #3498db;
+            font-size: 2em;
+            margin-top: 30px;
+            position: relative;
+            padding-left: 15px;
+        }
+        h2::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background-color: #3498db;
+            border-radius: 4px;
+        }
+        h3 {
+            color: #2980b9;
+            font-size: 1.5em;
+            margin-top: 25px;
+        }
+        h4 {
+            color: #555;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        h5 {
+            color: #555;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+        .content {
+            text-align: left;
+            font-weight: 400;
+        }
+        .content p {
+            margin-bottom: 1.2em;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 15px;
+            color: #7f8c8d;
+            border-top: 1px solid #eee;
+            margin-top: 40px;
+        }
+        .image-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .image-column {
+            flex: 1;
+            min-width: 280px;
+            margin: 10px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+        .image-column:hover {
+            transform: translateY(-5px);
+        }
+        .image-column img {
+            max-width: 100%;
+            height: 220px;
+            object-fit: cover;
+        }
+        .image-column h5 {
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            overflow-x: auto;
+            border-left: 4px solid #3498db;
+            font-size: 0.95em;
+            margin: 20px 0;
+        }
+        .math-formula {
+            text-align: center;
+            margin: 25px 0;
+            font-style: italic;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        code {
+            background-color: #f1f1f1;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95em;
+            color: #e74c3c;
+        }
+        ol, ul {
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .highlight {
+            background-color: #fffacd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f1c40f;
+            margin: 20px 0;
+        }
+        .implementation-note {
+            background-color: #e8f4fc;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            margin: 20px 0;
+        }
+        .image-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .image-item {
+            flex: 1;
+            max-width: 200px;
+            margin: 5px;
+        }
+        .image-item img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Project 3</h1>
+    <h2>Cats Generator Playground</h2>
+    <h4>Author: Keling Yao</h4>
+    <h4>Andrew ID: kennyy</h4>
+    
+    <div class="content">
+        <h2>Introduction</h2>
+        <p>
+            In this assignment, I got hands-on experience implementing and training different types of generative models. 
+            The project consists of three parts:
+        </p>
+        <ol>
+            <li>Deep Convolutional GAN (DCGAN) for generating cat images from random noise</li>
+            <li>Denoising Diffusion Probabilistic Model (DDPM) for iteratively denoising images</li>
+            <li>CycleGAN for image-to-image translation between different types of cats and fruits</li>
+        </ol>
+
+        <h2>Part 1: Deep Convolutional GAN</h2>
+        <div class="highlight">
+            <p>
+                This part implements a modified version of Deep Convolutional GAN (DCGAN), which is a GAN architecture that uses convolutional neural networks. In a DCGAN, the discriminator is implemented as a convolutional neural network, while the generator traditionally uses transposed convolutions. For this implementation, I use a combination of upsampling and convolution layers instead of transposed convolutions in the generator.
+            </p>
+        </div>
+        
+        <h3>1.1 Data Augmentation</h3>
+        <p>
+            DCGAN performs poorly without data augmentation on a small-sized dataset because the discriminator can easily overfit to a real dataset. To address this issue, I implemented data augmentation techniques including random crop and random horizontal flip in the <code>data_loader.py</code> file.
+        </p>
+        <!-- TODO: Add description of data augmentation implementation -->
+
+        <h3>1.2 Implement the Discriminator of the DCGAN</h3>
+        <p>
+            The discriminator in this DCGAN is a convolutional neural network that downsamples the input image through a series of convolutional layers.
+        </p>
+        
+        <h4>Padding Calculation in Convolutional Layers</h4>
+        <div class="implementation-note">
+            <p>
+                In each of the convolutional layers, we downsample the spatial dimension of the input volume by a factor of 2. Given that we use kernel size K = 4 and stride S = 2, we need to determine the appropriate padding.
+        </p>
+        
+        <p>
+                To calculate the padding, we use the formula for the output width of a convolutional layer:
+            </p>
+            
+            <p style="text-align: center;">
+                <em>W<sub>out</sub> = ⌊(W + 2 * padding - kernel_size) / stride + 1⌋</em>
+        </p>
+
+        <p>
+                Rearranging this formula to solve for padding:
+            </p>
+            
+            <p style="text-align: center;">
+                <em>padding = ((W<sub>out</sub> - 1) * stride + kernel_size - W) / 2</em>
+            </p>
+            
+            <p>
+                For our specific case, solving with W<sub>out</sub> = 32, W = 64, kernel_size = 4, and stride = 2:
+            </p>
+            
+            <p style="text-align: center;">
+                <em>padding = ((32 - 1) * 2 + 4 - 64) / 2 = (62 + 4 - 64) / 2 = 2 / 2 = 1</em>
+            </p>
+        </div>
+        
+        <h4>Implementation of the Discriminator</h4>
+        <p>
+            I implemented the DCGAN discriminator architecture by filling in the <code>__init__</code> and <code>forward</code> methods of the <code>DCDiscriminator</code> class in <code>models.py</code>. The architecture consists of 5 convolutional layers with batch normalization and leaky ReLU activations.
+        </p>
+        <!-- TODO: Add code implementation details if needed -->
+        
+        <h3>1.3 Generator Implementation</h3>
+        <p>
+            The generator of the DCGAN consists of a sequence of upsample+convolutional layers that progressively upsample the input noise sample to generate a fake image.
+        </p>
+        <!-- TODO: Add details of generator implementation -->
+        
+        <h3>1.4 Training Loop</h3>
+        <p>
+            I implemented the training loop for the DCGAN in <code>vanilla_gan.py</code>. The training procedure involves alternating between training the discriminator to distinguish between real and fake images, and training the generator to produce images that fool the discriminator.
+        </p>
+        <!-- TODO: Add details of training loop implementation -->
+        
+        <h3>1.5 Differentiable Augmentation</h3>
+        <p>
+            To improve the data efficiency of GANs, I applied differentiable augmentations to both real and fake images during training. This technique helps reduce overfitting in the discriminator by augmenting both sets of images in a way that preserves gradients for backpropagation.
+        </p>
+        <!-- TODO: Add details of differentiable augmentation implementation -->
+        
+        <h3>1.6 DCGAN Experiments and Results</h3>
+        <h4>Training Loss Curves</h4>
+        <p>
+            Below are the training loss curves for the discriminator and generator with and without differentiable augmentation:
+        </p>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>Discriminator Loss (Without DA)</h5>
+                <img src="data/DCGAN-D-loss.png" alt="Discriminator Loss">
+            </div>
+            <div class="image-column">
+                <h5>Generator Loss (Without DA)</h5>
+                <img src="data/DCGAN-G-loss.png" alt="Generator Loss">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>Discriminator Loss (With DA)</h5>
+                <img src="data/DCGAN-D-loss-diffaug.png" alt="Discriminator Loss">
+            </div>
+            <div class="image-column">
+                <h5>Generator Loss (With DA)</h5>
+                <img src="data/DCGAN-G-loss-diffaug.png" alt="Generator Loss">
+            </div>
+        </div>
+        
+        <div class="implementation-note">
+            <h4>Analysis of Training Results</h4>
+            <p>The results above demonstrate that, in a successfully trained GAN:</p>
+            <ol>
+                <li>The losses of the generator and discriminator should both be fluctuating and none of them should win significantly over the other.</li>
+                <li>Incorporating differentiable augmentation to reduce overfitting show a faster and more stable decrease in discriminator losses.</li>
+            </ol>
+        </div>
+        
+        <h4>Generated Samples</h4>
+        <p>
+            Here are samples generated by the DCGAN at different stages of training:
+        </p>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>Early Training (Iteration 200)</h5>
+                <img src="data/sample-000200.png" alt="Early DCGAN Sample">
+            </div>
+            <div class="image-column">
+                <h5>Late Training (Iteration 6400)</h5>
+                <img src="data/sample-006400.png" alt="Late DCGAN Sample">
+            </div>
+        </div>
+
+        <div class="highlight">
+            <p>
+                At 200 epochs, the samples are blurry, only the color regions are better defined but the cat features are not recognizable. At the end of the traning process, at 6400 epochs, the images are more realistic with smoother edges and better defined cat features.
+            </p>
+        </div>
+        
+        <h2>Part 2: Diffusion Model</h2>
+        <div class="highlight">
+            <p>
+                In this part, I implemented a Denoising Diffusion Probabilistic Model (DDPM), which is a type of generative model that iteratively denoises images from pure noise.
+            </p>
+        </div>
+        
+        <h3>2.1 Overview of Diffusion Models</h3>
+        <p>
+            The diffusion model consists of two key processes:
+        </p>
+        <ol>
+            <li><strong>Forward Diffusion Process:</strong> Gaussian noise progressively corrupts a clean image.</li>
+            <li><strong>Reverse Process:</strong> A trained neural network (UNet) learns to denoise the corrupted image step by step.</li>
+        </ol>
+        
+        <h3>2.2 Implementation Details</h3>
+        <h4>UNet Architecture</h4>
+        <p>
+            I implemented the UNet model for diffusion in <code>diffusion_model.py</code>. The UNet architecture is essential for the reverse diffusion process, as it predicts the noise added at each timestep.
+        </p>
+        <!-- TODO: Add details of UNet implementation -->
+        
+        <h4>Noise Scheduling and Diffusion Process</h4>
+        <p>
+            I implemented the beta schedule and noise scheduling functions in <code>diffusion_utils.py</code>. The beta schedule determines how much noise is added at each timestep, while the noise schedule helps define the forward and reverse diffusion processes.
+        </p>
+        <!-- TODO: Add details of noise scheduling implementation -->
+        
+        <h4>Training Loop</h4>
+        <p>
+            I implemented the training loop in <code>train_ddpm.py</code>, which computes the loss function (difference between predicted noise and true noise) and optimizes the UNet to denoise images progressively.
+        </p>
+        <!-- TODO: Add details of training loop implementation -->
+        
+        <h3>2.3 Diffusion Model Experiments and Results</h3>
+        <p>
+            After training the diffusion model, I generated images using <code>test_ddpm.py</code>. Below are some examples of generated images:
+        </p>
+        
+        <div class="image-gallery">
+            <div class="image-item">
+                <img src="data/diffusion_output_0.png" alt="Diffusion Sample 1">
+            </div>
+            <div class="image-item">
+                <img src="data/diffusion_output_1.png" alt="Diffusion Sample 2">
+            </div>
+            <div class="image-item">
+                <img src="data/diffusion_output_2.png" alt="Diffusion Sample 3">
+            </div>
+            <div class="image-item">
+                <img src="data/diffusion_output_3.png" alt="Diffusion Sample 4">
+            </div>
+            <div class="image-item">
+                <img src="data/diffusion_output_4.png" alt="Diffusion Sample 5">
+            </div>
+            <div class="image-item">
+                <img src="data/diffusion_output_5.png" alt="Diffusion Sample 6">
+            </div>
+            <div class="image-item">
+                <img src="data/diffusion_output_6.png" alt="Diffusion Sample 7">
+            </div>
+            <div class="image-item">
+                <img src="data/diffusion_output_7.png" alt="Diffusion Sample 8">
+            </div>
+            <div class="image-item">
+                <img src="data/diffusion_output_8.png" alt="Diffusion Sample 9">
+            </div>
+            <div class="image-item">
+                <img src="data/diffusion_output_9.png" alt="Diffusion Sample 10">
+            </div>
+        </div>
+        
+        <h3>2.4 Comparison with GAN Model</h3>
+        <div class="implementation-note">
+            <p>
+                After experimenting with both DDPM and DCGAN approaches, here's a comparison of their performance:
+            </p>
+            
+            <h4>Image Quality</h4>
+            <p>
+                The diffusion-generated images have better quality and detail in the cat features compared to the GAN-generated counterparts. The DDPM results have fewer artifacts such as blurry effects and random color noise compared to GAN outputs.
+            </p>
+            
+            <h4>Training Efficiency vs. Sample Diversity</h4>
+            <p>
+                The trade-off is between training speed and output diversity. DDPM models are significantly slower to train—requiring more computational resources and time—but consistently produce more diverse samples with greater variation in poses, colors, and features. In contrast, DCGAN offers faster training cycles but shows greater vulnerability to mode collapse, where the generator produces less diverse outputs.
+            </p>
+            
+            <h4>Strengths and Weaknesses Summary</h4>
+            <table style="width:100%; border-collapse: collapse; margin: 15px 0;">
+                <tr style="background-color: #f8f9fa; font-weight: bold;">
+                    <td style="padding: 10px; border: 1px solid #ddd;">Model</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Strengths</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Weaknesses</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;"><strong>DDPM</strong></td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">
+                        • Better image quality<br>
+                        • Higher sample diversity<br>
+                        • More stable training
+                    </td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">
+                        • Much slower training<br>
+                        • Higher computational cost
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;"><strong>DCGAN</strong></td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">
+                        • Faster training<br>
+                        • Quick image generation<br>
+                        • Lower resource needs
+                    </td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">
+                        • Less stable training<br>
+                        • More image artifacts<br>
+                        • Prone to mode collapse
+                    </td>
+                </tr>
+            </table>
+        </div>
+        
+        <h2>Part 3: CycleGAN</h2>
+        <div class="highlight">
+            <p>
+                In this part, I implemented the CycleGAN architecture for image-to-image translation between different domains without paired training data.
+            </p>
+        </div>
+        
+        <h3>3.1 Generator Implementation</h3>
+        <p>
+            The generator in the CycleGAN has three stages:
+        </p>
+        <ol>
+            <li><strong>Encoder:</strong> A series of convolutional layers that extract image features</li>
+            <li><strong>Transformation:</strong> Residual blocks that transform the features</li>
+            <li><strong>Decoder:</strong> Transposed convolutional layers that build an output image of the same size as the input</li>
+        </ol>
+        <!-- TODO: Add details of generator implementation -->
+        
+        <h3>3.2 PatchDiscriminator Implementation</h3>
+        <p>
+            CycleGAN adopts a patch-based discriminator that classifies patches of images rather than entire images. This allows the model to better capture local structures.
+        </p>
+        <!-- TODO: Add details of PatchDiscriminator implementation -->
+        
+        <h3>3.3 CycleGAN Training Loop</h3>
+        <p>
+            I implemented the CycleGAN training procedure in <code>cycle_gan.py</code>, which includes training both generators and discriminators in both directions (X→Y and Y→X).
+        </p>
+        <!-- TODO: Add details of training loop implementation -->
+        
+        <h4>Cycle Consistency Loss</h4>
+        <p>
+            The cycle consistency loss ensures that when an image is translated from domain X to domain Y and back to domain X, the result should look like the original image. This is a key innovation in CycleGAN.
+        </p>
+        <!-- TODO: Add details of cycle consistency loss implementation -->
+        
+        <h3>3.4 CycleGAN Experiments and Results</h3>
+        <h4>Training without Cycle Consistency Loss</h4>
+        <p>
+            Here are the results after training the CycleGAN without cycle consistency loss for 1000 iterations:
+        </p>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>X→Y Translation</h5>
+                <img src="data/CGAN-sample-001000-X-Y.png" alt="CycleGAN X to Y without cycle loss">
+            </div>
+            <div class="image-column">
+                <h5>Y→X Translation</h5>
+                <img src="data/CGAN-sample-001000-Y-X.png" alt="CycleGAN Y to X without cycle loss">
+                </div>
+            </div>
+
+        <h4>Training with Cycle Consistency Loss</h4>
+        <p>
+            Here are the results after training the CycleGAN with cycle consistency loss for 1000 iterations:
+        </p>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>X→Y Translation</h5>
+                <img src="data/CGANcycle-sample-001000-X-Y.png" alt="CycleGAN X to Y with cycle loss">
+            </div>
+            <div class="image-column">
+                <h5>Y→X Translation</h5>
+                <img src="data/CGANcycle-sample-001000-Y-X.png" alt="CycleGAN Y to X with cycle loss">
+            </div>
+        </div>
+    
+        <h4>Results after 10,000 Iterations</h4>
+        <p>
+            Here are the results after training the CycleGAN without cycle consistency loss for 10,000 iterations:
+        </p>
+            <div class="image-row">
+                <div class="image-column">
+                <h5>X→Y Translation</h5>
+                <img src="data/CGAN-sample-010000-X-Y.png" alt="CycleGAN X to Y 10k iterations">
+                </div>
+            <div class="image-column">
+                <h5>Y→X Translation</h5>
+                <img src="data/CGAN-sample-010000-Y-X.png" alt="CycleGAN Y to X 10k iterations">
+            </div>
+        </div>
+        <p>
+            Here are the results after training the CycleGAN with cycle consistency loss for 10,000 iterations:
+        </p>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>X→Y Translation</h5>
+                <img src="data/CGANcycle-sample-010000-X-Y.png" alt="CycleGAN X to Y 10k iterations">
+            </div>
+            <div class="image-column">
+                <h5>Y→X Translation</h5>
+                <img src="data/CGANcycle-sample-010000-Y-X.png" alt="CycleGAN Y to X 10k iterations">
+            </div>
+        </div>
+    
+        <h4>Apple2Orange Dataset Results</h4>
+        <p>
+            Here are the results of training on the apple2orange dataset for 10,000 iterations without cycle consistency loss:
+        </p>
+            <div class="image-row">
+                <div class="image-column">
+                <h5>Apple→Orange Translation</h5>
+                <img src="data/apple-without-sample-010000-X-Y.png" alt="CycleGAN Apple to Orange">
+            </div>
+            <div class="image-column">
+                <h5>Orange→Apple Translation</h5>
+                <img src="data/apple-without-sample-010000-Y-X.png" alt="CycleGAN Orange to Apple">
+                </div>
+            </div>
+
+        <p>
+            Here are the results of training on the apple2orange dataset for 10,000 iterations with cycle consistency loss:
+        </p>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>Apple→Orange Translation</h5>
+                <img src="data/apple-sample-010000-X-Y.png" alt="CycleGAN Apple to Orange">
+            </div>
+            <div class="image-column">
+                <h5>Orange→Apple Translation</h5>
+                <img src="data/apple-sample-010000-Y-X.png" alt="CycleGAN Orange to Apple">
+            </div>
+        </div>
+        
+        <h4>Observations on Cycle Consistency Loss</h4>
+        <div class="implementation-note">
+            <h5>Better Detail Preservation</h5>
+            <p>
+                Images with cycle consistency loss maintain more of their original details. This happens because the model is trained to minimize the difference between the original image and the same image after being translated to another domain and back. For example, small details like a cat's eyes and pose of fruit are better preserved when using cycle consistency loss. Without it, these subtle features might be lost during translation.
+            </p>
+            
+            <h5>Realism Trade-off</h5>
+            <p>
+                Images generated <em>without</em> cycle consistency loss can sometimes appear more realistic to human. This occurs because the model focuses entirely on fooling the discriminator and doesn't need to compromise between realism and preserving original features. 
+            </p>
+        </div>
+        <h2>Bells & Whistles (Extra Credit)</h2>
+
+        <h3>CycleGAN with the DCDiscriminator</h3>
+        <p>
+            I trained the CycleGAN using the DCDiscriminator instead of the PatchDiscriminator to compare their performance. 
+        </p>
+        <h4>Results</h4>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>Iter 10000, X→Y</h5>
+                <img src="data/dccGAN-sample-010000-X-Y.png" alt="CycleGAN with DCDiscriminator X to Y">
+            </div>
+            <div class="image-column">
+                <h5>Iter 10000, Y→X</h5>
+                <img src="data/dccGAN-sample-010000-Y-X.png" alt="CycleGAN with DCDiscriminator Y to X">
+            </div>
+        </div>
+
+        <p>
+            Some details are lost. For example, the cats' eyes are especially blurry. This difference occurs because the PatchDiscriminator evaluates realism at the patch level, encouraging the generator to produce locally coherent details.
+        </p>
+
+
+<div class="footer">
+    &copy; 2024 Kenny Yao | Course 16726 | Image-Based Synthesis
+    </div>
+</div>
+
+</body>
+</html>

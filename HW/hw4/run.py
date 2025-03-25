@@ -7,6 +7,7 @@ import sys
 from utils import load_image, Normalization, device, imshow, get_image_optimizer
 from style_and_content import ContentLoss, StyleLoss
 import torchvision.transforms as T
+import time
 
 
 """A ``Sequential`` module contains an ordered list of child modules. For
@@ -17,9 +18,12 @@ layer they are detecting. To do this we must create a new ``Sequential``
 module that has content loss and style loss modules correctly inserted.
 """
 
+# seed 
+torch.manual_seed(0)
+
 # desired depth layers to compute style/content losses :
-content_layers_default = ['conv_4']
-style_layers_default = ['conv_1', 'conv_2', 'conv_3', 'conv_4', 'conv_5']
+content_layers_default = ['conv_3']
+style_layers_default = ['conv_1', 'conv_2', 'conv_3', 'conv_4', 'conv_5', 'conv_6', 'conv_7', 'conv_8', 'conv_9', 'conv_10']
 
 
 def get_model_and_losses(cnn, style_img, content_img,
@@ -203,43 +207,66 @@ def main(style_img_path, content_img_path):
     # and configure it for evaluation
     cnn = models.vgg19(pretrained=True).features.to(device).eval()
 
-    # image reconstruction
-    print("Performing Image Reconstruction from white noise initialization")
-    # input_img = random noise of the size of content_img on the correct device
-    input_img = torch.randn(content_img.data.size(), device=device)
-    # output = reconstruct the image from the noise
-    output = run_optimization(cnn, content_img, style_img, input_img, use_content=True, use_style=False, num_steps=1000)
+    # ============================ part1 ============================
+    # # image reconstruction
+    # print("Performing Image Reconstruction from white noise initialization")
+    # # input_img = random noise of the size of content_img on the correct device
+    # input_img = torch.randn(content_img.data.size(), device=device)
+    # # output = reconstruct the image from the noise
+    # output = run_optimization(cnn, content_img, style_img, input_img, use_content=True, use_style=False, num_steps=1000)
 
-    plt.figure()
-    imshow(output, title='Reconstructed Image')
+    # plt.figure()
+    # imshow(output, title='Reconstructed Image')
+    # plt.savefig("results/reconstructed_image_layer3_seed12.png")
 
-    # texture synthesis
-    print("Performing Texture Synthesis from white noise initialization")
-    # input_img = random noise of the size of content_img on the correct device
-    # output = synthesize a texture like style_image
+    # ============================ part2 ============================
+    # # texture synthesis
+    # print("Performing Texture Synthesis from white noise initialization")
+    # # input_img = random noise of the size of content_img on the correct device
+    # # output = synthesize a texture like style_image
+    # input_img = torch.randn(content_img.data.size(), device=device)
+    # output = run_optimization(cnn, content_img, style_img, input_img, use_content=False, use_style=True, num_steps=1000)
 
-    plt.figure()
-    imshow(output, title='Synthesized Texture')
-
+    # plt.figure()
+    # imshow(output, title='Synthesized Texture')
+    # plt.savefig("results/synthesized_texture_1-15_seed0.png")
+    # ============================ part3 ============================
     # style transfer
     # input_img = random noise of the size of content_img on the correct device
     # output = transfer the style from the style_img to the content image
 
+    print("Performing Style Transfer from random noise initialization")
+    time_start_noise = time.time()
+    input_img = torch.randn(content_img.data.size(), device=device)
+    output = run_optimization(cnn, content_img, style_img, input_img, use_content=True, use_style=True, num_steps=1000, style_weight=10000, content_weight=1)
+    
     plt.figure()
     imshow(output, title='Output Image from noise')
+    # adding the name of the style and content image to the path
+    plt.savefig(f"results/style_transfer_noise_{style_img_path.split('/')[-1].split('.')[0]}_{content_img_path.split('/')[-1].split('.')[0]}.png")
+    time_end_noise = time.time()
 
     print("Performing Style Transfer from content image initialization")
     # input_img = content_img.clone()
     # output = transfer the style from the style_img to the content image
+    time_start_content = time.time()
 
+    input_img = content_img.clone()
+    output = run_optimization(cnn, content_img, style_img, input_img, use_content=True, use_style=True, num_steps=1000)
     plt.figure()
-    imshow(output, title='Output Image from noise')
+    imshow(output, title='Output Image from content')
+    plt.savefig(f"results/style_transfer_content_{style_img_path.split('/')[-1].split('.')[0]}_{content_img_path.split('/')[-1].split('.')[0]}.png")
+    time_end_content = time.time()
+
+    print(f"Time taken: {time_end_noise - time_start_noise} seconds")
+    print(f"Time taken: {time_end_content - time_start_content} seconds")
+
+    # ================================================================
 
     plt.ioff()
     plt.show()
 
 
 if __name__ == '__main__':
-    # args = sys.argv[1:3]
-    # main(*args)
-    main("images/style/frida_kahlo.jpeg", "images/content/fallingwater.png")
+    args = sys.argv[1:3]
+    main(*args)

@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 4 - Neural Style Transfer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            line-height: 1.6;
+            font-size: 17px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 30px;
+            background: white;
+            box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            text-align: center;
+        }
+        h1, h2, h3 {
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        h1 {
+            color: #2c3e50;
+            font-size: 2.6em;
+            margin-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #3498db;
+            font-size: 2em;
+            margin-top: 30px;
+            position: relative;
+            padding-left: 15px;
+        }
+        h2::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background-color: #3498db;
+            border-radius: 4px;
+        }
+        h3 {
+            color: #2980b9;
+            font-size: 1.5em;
+            margin-top: 25px;
+        }
+        h4 {
+            color: #555;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        h5 {
+            color: #555;
+            font-size: 1.1em;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+        .content {
+            text-align: left;
+            font-weight: 400;
+        }
+        .content p {
+            margin-bottom: 1.2em;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 15px;
+            color: #7f8c8d;
+            border-top: 1px solid #eee;
+            margin-top: 40px;
+        }
+        .image-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .image-column {
+            flex: 1;
+            min-width: 280px;
+            margin: 10px;
+            text-align: center;
+        }
+        .image-column img {
+            max-width: 100%;
+            height: 220px;
+            object-fit: cover;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            overflow-x: auto;
+            border-left: 4px solid #3498db;
+            font-size: 0.95em;
+            margin: 20px 0;
+        }
+        .math-formula {
+            text-align: center;
+            margin: 25px 0;
+            font-style: italic;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        code {
+            background-color: #f1f1f1;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95em;
+            color: #e74c3c;
+        }
+        ol, ul {
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .highlight {
+            background-color: #fffacd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f1c40f;
+            margin: 20px 0;
+        }
+        .implementation-note {
+            background-color: #e8f4fc;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            margin: 20px 0;
+        }
+        .image-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .image-item {
+            flex: 1;
+            max-width: 200px;
+            margin: 5px;
+        }
+        .image-item img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+        .analysis {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Project 4</h1>
+    <h2>Neural Style Transfer</h2>
+    <h4>Author: Keling Yao</h4>
+    <h4>Andrew ID: kennyy</h4>
+    
+    <div class="content">
+        <h2>Introduction</h2>
+        <p>
+            In this assignment, I implemented neural style transfer which resembles specific content in a certain artistic style. 
+            For example, generating images like Fallingwater in Frida Kahlo's artistic style. The algorithm takes in a content image, 
+            a style image, and another input image. The input image is optimized to match the previous two target images in content 
+            and style distance space.
+        </p>
+        <p>
+            The project consists of three parts:
+        </p>
+        <ol>
+            <li>Content Reconstruction: Optimizing random noise with respect to content loss only</li>
+            <li>Texture Synthesis: Generating textures by optimizing style loss only</li>
+            <li>Style Transfer: Combining content and style losses to perform neural style transfer</li>
+        </ol>
+
+        <h2>Part 1: Content Reconstruction [30 points]</h2>
+        <p>
+            In this part, I optimized a random noise image with respect to content loss only. Content loss measures the distance between feature representations of the input image and target content image at specific layers of a pre-trained VGG-19 network.
+        </p>
+        
+        <h3>Content Loss at Different Layers</h3>
+        <p>
+            I experimented with applying content loss at different layers of the VGG-19 network to understand how the layer choice affects the reconstruction.
+        </p>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>Content Image</h5>
+                <img src="data/fallingwater.png" alt="Original Content Image">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>Layer 1</h5>
+                <img src="data/reconstructed_image_layer1.png" alt="Content Reconstruction at layer 1">
+            </div>
+            <div class="image-column">
+                <h5>Layer 3</h5>
+                <img src="data/reconstructed_image_layer3.png" alt="Content Reconstruction at layer 3">
+            </div>
+            <div class="image-column">
+                <h5>Layer 6</h5>
+                <img src="data/reconstructed_image_layer6.png" alt="Content Reconstruction at layer 6">
+            </div>
+            <div class="image-column">
+                <h5>Layer 9</h5>
+                <img src="data/reconstructed_image_layer9.png" alt="Content Reconstruction at layer 9">
+            </div>
+        </div>
+        
+        <div>
+            <p>Original image and optimizing content loss on the 4 different layers are shown above. My favorite is optimizing on the layer 1 and layer 3 as it provides a good balance between preserving details and color, and capturing the overall structure. Lower layers (layer 1, layer 3) produce reconstructions very close to the original with fine details, while higher layers (layer 9) preserve only structural elements with significant loss of detail.</p>
+        </div>
+        
+        <h3>Results from Different Random Noise Initializations</h3>
+        <p>
+            I took two different random noise images as input and optimized them using content loss at the layer 3.
+        </p>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>Content Target</h5>
+                <img src="data/fallingwater.png" alt="Content Target">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>Random Noise 1 (seed 0)</h5>
+                <img src="data/reconstructed_image_layer3_seed0.png" alt="Optimized Random Noise 1">
+            </div>
+            <div class="image-column">
+                <h5>Random Noise 2 (seed 12)</h5>
+                <img src="data/reconstructed_image_layer3_seed12.png" alt="Optimized Random Noise 2">
+            </div>
+        </div>
+        
+        <div>
+            <p>Starting from completely different random noise patterns, both images converge to similar results that capture the content of the target image. This shows content optimization is relatively stable regardless of initial conditions, However, there are some differences in texture, lighting, and color remain between the two results.</p>
+        </div>
+
+        <h2>Part 2: Texture Synthesis [30 points]</h2>
+        <p>
+            In this part, I optimized images to match only the style of a target image without considering content. Style is represented using Gram matrices, which capture correlations between feature maps at different layers.
+        </p>
+        
+        <h3>Style Loss at Different Layers</h3>
+        <p>
+            I experimented with applying style loss at different layers to understand how it affects texture synthesis.
+        </p>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>Style Reference</h5>
+                <img src="data/starry_night.jpeg" alt="Style Reference">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>Layer 1-5</h5>
+                <img src="data/synthesized_texture_1-5.png" alt="Texture Synthesis with Lower Layers">
+            </div>
+            <div class="image-column">
+                <h5>Layer 1-10</h5>
+                <img src="data/synthesized_texture_1-10.png" alt="Texture Synthesis with All Layers">
+            </div>
+            <div class="image-column">
+                <h5>Layer 1-15</h5>
+                <img src="data/synthesized_texture_1-15.png" alt="Texture Synthesis with All Layers">
+            </div>
+            <div class="image-column">
+                <h5>Layer 6-10</h5>
+                <img src="data/synthesized_texture_6-10.png" alt="Texture Synthesis with All Layers">
+            </div>
+        </div>
+        
+            <div>
+                <p>When applying style loss at different layers, I like layer1-10 better. The style and colors are most accurately preserved in this layer. And compute effeciency is lower when comparing to using all layers.</p>
+            </div>
+        
+        <h3>Results from Different Random Noise Initializations</h3>
+        <p>
+            I took two different random noise images as input and optimized them using style loss across multiple layers.
+        </p>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>Style Target</h5>
+                <img src="data/starry_night.jpeg" alt="Style Target">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>Random Noise 1 (seed 0)</h5>
+                <img src="data/synthesized_texture_1-10_seed0.png" alt="Style-Optimized Noise 1">
+            </div>
+            <div class="image-column">
+                <h5>Random Noise 2 (seed 12)</h5>
+                <img src="data/synthesized_texture_1-10.png" alt="Style-Optimized Noise 2">
+            </div>
+        </div>
+        
+        <div>
+            <p>Unlike content reconstruction, texture synthesis results show significant variation based on initial conditions. While both results capture the style characteristics (color palette, brush stroke texture) of the target image, they present different compositions.</p>
+        </div>
+
+        <h2>Part 3: Style Transfer [40 points]</h2>
+        <p>
+            In this final part, I combined content and style losses to perform neural style transfer, generating images that preserve the content of one image while adopting the style of another.
+        </p>
+        
+        <h3>Implementation Details</h3>
+        <p>
+            For neural style transfer, I combined the content loss and style loss. I found that optimizing content on layer 3 and style on layers 1-10 produced the best results. 
+            <br>
+            Gram matrix implementation normalizes values by dividing by the number of elements in each feature map. 
+            <br>
+            style weight: 10,000
+            <br>
+            content weight: 1
+            <br>
+            steps: 1000
+        </p>
+        
+        <h3>Style Transfer Results</h3>
+        <p>
+            Below is a grid showing two content images styled with two different style images:
+        </p>
+        <div class="image-row">
+            <div class="image-column">
+                <h5> </h5>
+            </div>
+            <div class="image-column">
+                <h5>Content 1: Fallingwater</h5>
+                <img src="data/fallingwater.png" alt="Style 1">
+            </div>
+            <div class="image-column">
+                <h5>Content 2: Tubingen</h5>
+                <img src="data/tubingen.jpeg" alt="Style 2">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>Style 1: Starry Night</h5>
+                <img src="data/starry_night.jpeg" alt="Style 1">
+            </div>
+            <div class="image-column">
+                <h5>Content 1 + Style 1</h5>
+                <img src="data/style_transfer_noise_starry_night_fallingwater.png" alt="Content 1 + Style 1">
+            </div>
+        <div class="image-column">
+            <h5>Content 2 + Style 1</h5>
+                <img src="data/style_transfer_noise_starry_night_tubingen.png" alt="Content 2 + Style 1">
+            </div>
+        </div>
+
+        <div class="image-row">
+            <div class="image-column">
+                <h5>Style 2: Picasso</h5>
+                <img src="data/picasso.jpg" alt="Style 2">
+            </div>
+            <div class="image-column">
+                <h5>Content 1 + Style 2</h5>
+                <img src="data/style_transfer_noise_picasso_fallingwater.png" alt="Content 1 + Style 2">
+            </div>
+            <div class="image-column">
+                <h5>Content 2 + Style 2</h5>
+                <img src="data/style_transfer_noise_picasso_tubingen.png" alt="Content 2 + Style 2">
+            </div>
+        </div>
+        
+        <h3>Random Noise vs. Content Image as Input</h3>
+        <p>
+            I compared the results of style transfer when starting from random noise versus using the content image as the initial input:
+        </p>
+
+        <div class="image-row">
+            <div class="image-column">
+                <h5> </h5>
+            </div>
+            <div class="image-column">
+                <h5>Content 1: Fallingwater</h5>
+                <img src="data/fallingwater.png" alt="Style 1">
+            </div>
+            <div class="image-column">
+                <h5>Content 2: Tubingen</h5>
+                <img src="data/tubingen.jpeg" alt="Style 2">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>Style 1: Starry Night</h5>
+                <img src="data/starry_night.jpeg" alt="Style 1">
+            </div>
+            <div class="image-column">
+                <h5>Content 1 + Style 1</h5>
+                <img src="data/style_transfer_content_starry_night_fallingwater.png" alt="Content 1 + Style 1">
+            </div>
+        <div class="image-column">
+            <h5>Content 2 + Style 1</h5>
+                <img src="data/style_transfer_content_starry_night_tubingen.png" alt="Content 2 + Style 1">
+            </div>
+        </div>
+
+        <div class="image-row">
+            <div class="image-column">
+                <h5>Style 2: Picasso</h5>
+                <img src="data/picasso.jpg" alt="Style 2">
+            </div>
+            <div class="image-column">
+                <h5>Content 1 + Style 2</h5>
+                <img src="data/style_transfer_content_picasso_fallingwater.png" alt="Content 1 + Style 2">
+            </div>
+            <div class="image-column">
+                <h5>Content 2 + Style 2</h5>
+                <img src="data/style_transfer_content_picasso_tubingen.png" alt="Content 2 + Style 2">
+            </div>
+        </div>
+        
+        <div class="analysis">
+            <p>Starting from the content image produces results that better preserve the content structure, with more detail and sharper edges. It also significantly reduces optimization time—approximately 50% faster convergence compared to starting from random noise. For practical applications, I recommend starting from the content image as it provides better content preservation and faster convergence.</p>
+        </div>
+        
+        <h3>Personal Style Transfer Examples</h3>
+        <p>
+            Here are some style transfer results using my favorite images:
+        </p>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>Content: Cityscape</h5>
+                <img src="data/city_content.jpg" alt="City Content">
+            </div>
+            <div class="image-column">
+                <h5>Style: Monet</h5>
+                <img src="data/monet_style.jpg" alt="Monet Style">
+            </div>
+            <div class="image-column">
+                <h5>Stylized Result</h5>
+                <img src="data/city_monet.jpg" alt="Stylized City">
+            </div>
+        </div>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>Content: Pet</h5>
+                <img src="data/pet_content.jpg" alt="Pet Content">
+            </div>
+            <div class="image-column">
+                <h5>Style: Ukiyo-e</h5>
+                <img src="data/ukiyoe_style.jpg" alt="Ukiyo-e Style">
+            </div>
+            <div class="image-column">
+                <h5>Stylized Result</h5>
+                <img src="data/pet_ukiyoe.jpg" alt="Stylized Pet">
+            </div>
+        </div>
+
+        <h2>Bells & Whistles (Extra Credit)</h2>
+
+        <h3>Stylized Cats from Previous Homework</h3>
+        <p>
+            I applied style transfer to some of the generated cat images from Project 3 (DCGAN):
+        </p>
+        <div class="image-row">
+            <div class="image-column">
+                <h5>Generated Cat</h5>
+                <img src="data/gan_cat.jpg" alt="GAN Cat">
+            </div>
+            <div class="image-column">
+                <h5>Style: Starry Night</h5>
+                <img src="data/starry_night.jpg" alt="Starry Night">
+            </div>
+            <div class="image-column">
+                <h5>Stylized Result</h5>
+                <img src="data/cat_starry.jpg" alt="Stylized GAN Cat">
+            </div>
+        </div>
+
+        <h3>Video Style Transfer</h3>
+        <p>
+            I implemented frame-by-frame style transfer on a short video clip. To maintain temporal consistency, I used each stylized frame as the starting point for the next frame's optimization.
+        </p>
+        <p>
+            <a href="data/styled_video.mp4">View Styled Video (MP4)</a>
+        </p>
+
+<div class="footer">
+    &copy; 2024 Kenny Yao | Course 16726 | Image-Based Synthesis
+    </div>
+</div>
+
+</body>
+</html>

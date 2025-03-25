@@ -252,7 +252,7 @@ def main(style_img_path, content_img_path):
     time_start_content = time.time()
 
     input_img = content_img.clone()
-    output = run_optimization(cnn, content_img, style_img, input_img, use_content=True, use_style=True, num_steps=1000)
+    output = run_optimization(cnn, content_img, style_img, input_img, use_content=True, use_style=True, num_steps=1000, style_weight=10000, content_weight=1)
     plt.figure()
     imshow(output, title='Output Image from content')
     plt.savefig(f"results/style_transfer_content_{style_img_path.split('/')[-1].split('.')[0]}_{content_img_path.split('/')[-1].split('.')[0]}.png")

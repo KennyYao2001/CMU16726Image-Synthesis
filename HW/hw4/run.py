@@ -19,7 +19,7 @@ module that has content loss and style loss modules correctly inserted.
 """
 
 # seed 
-torch.manual_seed(0)
+torch.manual_seed(3)
 
 # desired depth layers to compute style/content losses :
 content_layers_default = ['conv_3']
@@ -235,16 +235,16 @@ def main(style_img_path, content_img_path):
     # input_img = random noise of the size of content_img on the correct device
     # output = transfer the style from the style_img to the content image
 
-    print("Performing Style Transfer from random noise initialization")
-    time_start_noise = time.time()
-    input_img = torch.randn(content_img.data.size(), device=device)
-    output = run_optimization(cnn, content_img, style_img, input_img, use_content=True, use_style=True, num_steps=1000, style_weight=10000, content_weight=1)
+    # print("Performing Style Transfer from random noise initialization")
+    # time_start_noise = time.time()
+    # input_img = torch.randn(content_img.data.size(), device=device)
+    # output = run_optimization(cnn, content_img, style_img, input_img, use_content=True, use_style=True, num_steps=1000, style_weight=10000, content_weight=1)
     
-    plt.figure()
-    imshow(output, title='Output Image from noise')
-    # adding the name of the style and content image to the path
-    plt.savefig(f"results/style_transfer_noise_{style_img_path.split('/')[-1].split('.')[0]}_{content_img_path.split('/')[-1].split('.')[0]}.png")
-    time_end_noise = time.time()
+    # plt.figure()
+    # imshow(output, title='Output Image from noise')
+    # # adding the name of the style and content image to the path
+    # plt.savefig(f"results/style_transfer_noise_{style_img_path.split('/')[-1].split('.')[0]}_{content_img_path.split('/')[-1].split('.')[0]}.png")
+    # time_end_noise = time.time()
 
     print("Performing Style Transfer from content image initialization")
     # input_img = content_img.clone()
@@ -258,7 +258,7 @@ def main(style_img_path, content_img_path):
     plt.savefig(f"results/style_transfer_content_{style_img_path.split('/')[-1].split('.')[0]}_{content_img_path.split('/')[-1].split('.')[0]}.png")
     time_end_content = time.time()
 
-    print(f"Time taken: {time_end_noise - time_start_noise} seconds")
+    # print(f"Time taken: {time_end_noise - time_start_noise} seconds")
     print(f"Time taken: {time_end_content - time_start_content} seconds")
 
     # ================================================================

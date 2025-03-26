@@ -254,7 +254,7 @@
         </div>
         
         <div>
-            <p>Starting from completely different random noise patterns, both images converge to similar results that capture the content of the target image. This shows content optimization is relatively stable regardless of initial conditions, However, there are some differences in texture, lighting, and color remain between the two results.</p>
+            <p>Starting from completely different random noise patterns, both images converge to similar results that capture the content of the target image. This shows content optimization is relatively stable regardless of initial conditions, However, there are some differences in texture, lighting, and color remain between the two results. And the random noise 2 is closer to the original content image.</p>
         </div>
 
         <h2>Part 2: Texture Synthesis [30 points]</h2>
@@ -292,7 +292,7 @@
         </div>
         
             <div>
-                <p>When applying style loss at different layers, I like layer1-10 better. The style and colors are most accurately preserved in this layer. And compute effeciency is lower when comparing to using all layers.</p>
+                <p>When applying style loss at different layers, I like layer1-10 better. The style and colors are most accurately preserved in this layer. And compute effeciency is lower when comparing to using more layers.</p>
             </div>
         
         <h3>Results from Different Random Noise Initializations</h3>
@@ -433,71 +433,59 @@
             </div>
         </div>
         
-        <div class="analysis">
-            <p>Starting from the content image produces results that better preserve the content structure, with more detail and sharper edges. It also significantly reduces optimization time—approximately 50% faster convergence compared to starting from random noise. For practical applications, I recommend starting from the content image as it provides better content preservation and faster convergence.</p>
+        <div>
+            <p>Starting from the content image produces results that better preserve the content structure, with more detail and sharper edges. As for runtime, the time is almost the same, content image is faster (content image: 22.6s, random noise: 23.4s, experiment done in A6000 GPU).</p>
         </div>
         
         <h3>Personal Style Transfer Examples</h3>
         <p>
-            Here are some style transfer results using my favorite images:
+            Here are some style transfer results using my favorite images. I found that photo with more complex features and sharp differences in color and texture works not that well just like the tree example. The ice example on the other hand works much better.
         </p>
+
         <div class="image-row">
             <div class="image-column">
-                <h5>Content: Cityscape</h5>
-                <img src="data/city_content.jpg" alt="City Content">
+                <h5> </h5>
             </div>
             <div class="image-column">
-                <h5>Style: Monet</h5>
-                <img src="data/monet_style.jpg" alt="Monet Style">
+                <h5>Content 1: Ice from iceland</h5>
+                <img src="data/ice.jpg" alt="Style 1">
             </div>
             <div class="image-column">
-                <h5>Stylized Result</h5>
-                <img src="data/city_monet.jpg" alt="Stylized City">
+                <h5>Content 2: Tree from Pittsburgh</h5>
+                <img src="data/tree.jpg" alt="Style 2">
             </div>
         </div>
         <div class="image-row">
             <div class="image-column">
-                <h5>Content: Pet</h5>
-                <img src="data/pet_content.jpg" alt="Pet Content">
+                <h5>Style 1: Starry Night</h5>
+                <img src="data/starry_night.jpeg" alt="Style 1">
             </div>
             <div class="image-column">
-                <h5>Style: Ukiyo-e</h5>
-                <img src="data/ukiyoe_style.jpg" alt="Ukiyo-e Style">
+                <h5>Content 1 + Style 1</h5>
+                <img src="data/style_transfer_content_starry_night_ice.png" alt="Content 1 + Style 1">
             </div>
-            <div class="image-column">
-                <h5>Stylized Result</h5>
-                <img src="data/pet_ukiyoe.jpg" alt="Stylized Pet">
+        <div class="image-column">
+            <h5>Content 2 + Style 1</h5>
+                <img src="data/style_transfer_content_starry_night_tree.png" alt="Content 2 + Style 1">
             </div>
         </div>
 
-        <h2>Bells & Whistles (Extra Credit)</h2>
-
-        <h3>Stylized Cats from Previous Homework</h3>
-        <p>
-            I applied style transfer to some of the generated cat images from Project 3 (DCGAN):
-        </p>
         <div class="image-row">
             <div class="image-column">
-                <h5>Generated Cat</h5>
-                <img src="data/gan_cat.jpg" alt="GAN Cat">
+                <h5>Style 2: Picasso</h5>
+                <img src="data/picasso.jpg" alt="Style 2">
             </div>
             <div class="image-column">
-                <h5>Style: Starry Night</h5>
-                <img src="data/starry_night.jpg" alt="Starry Night">
+                <h5>Content 1 + Style 2</h5>
+                <img src="data/style_transfer_content_picasso_ice.png" alt="Content 1 + Style 2">
             </div>
             <div class="image-column">
-                <h5>Stylized Result</h5>
-                <img src="data/cat_starry.jpg" alt="Stylized GAN Cat">
+                <h5>Content 2 + Style 2</h5>
+                <img src="data/style_transfer_content_picasso_tree.png" alt="Content 2 + Style 2">
             </div>
         </div>
 
-        <h3>Video Style Transfer</h3>
-        <p>
-            I implemented frame-by-frame style transfer on a short video clip. To maintain temporal consistency, I used each stylized frame as the starting point for the next frame's optimization.
-        </p>
-        <p>
-            <a href="data/styled_video.mp4">View Styled Video (MP4)</a>
-        </p>
+
 
 <div class="footer">
     &copy; 2024 Kenny Yao | Course 16726 | Image-Based Synthesis

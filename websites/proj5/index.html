@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 5 - Cats Photo Editing</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            line-height: 1.6;
+            font-size: 17px;
+            display: flex;
+        }
+        /* Table of Contents Styles */
+        .toc-container {
+            width: 250px;
+            background-color: #fff;
+            padding: 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+        .toc-title {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        .toc-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .toc-list a {
+            display: block;
+            padding: 8px 5px;
+            text-decoration: none;
+            color: #555;
+            border-left: 3px solid transparent;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+        }
+        .toc-list a:hover, .toc-list a.active {
+            background-color: #f0f7ff;
+            border-left: 3px solid #3498db;
+            color: #3498db;
+        }
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            width: calc(100% - 250px);
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 95%;
+            max-width: 1800px;
+            margin: 20px auto;
+            padding: 30px;
+            background: white;
+            box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            text-align: center;
+        }
+        h1, h2, h3 {
+            font-weight: 700;
+            line-height: 1.3;
+            scroll-margin-top: 60px; /* For smooth scrolling to section */
+        }
+        h1 {
+            color: #2c3e50;
+            font-size: 2.6em;
+            margin-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #3498db;
+            font-size: 2em;
+            margin-top: 30px;
+            position: relative;
+            padding-left: 15px;
+        }
+        h2::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background-color: #3498db;
+            border-radius: 4px;
+        }
+        h3 {
+            color: #2980b9;
+            font-size: 1.5em;
+            margin-top: 25px;
+        }
+        h4 {
+            color: #555;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        h5 {
+            color: #555;
+            font-size: 1.1em;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+        .content {
+            text-align: left;
+            font-weight: 400;
+        }
+        .content p {
+            margin-bottom: 1.2em;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 15px;
+            color: #7f8c8d;
+            border-top: 1px solid #eee;
+            margin-top: 40px;
+        }
+        .image-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .image-column {
+            flex: 1;
+            min-width: 280px;
+            margin: 10px;
+            text-align: center;
+        }
+        .image-column img {
+            max-width: 350px;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            overflow-x: auto;
+            border-left: 4px solid #3498db;
+            font-size: 0.95em;
+            margin: 20px 0;
+        }
+        .math-formula {
+            text-align: center;
+            margin: 25px 0;
+            font-style: italic;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        code {
+            background-color: #f1f1f1;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95em;
+            color: #e74c3c;
+        }
+        ol, ul {
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .highlight {
+            background-color: #fffacd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f1c40f;
+            margin: 20px 0;
+        }
+        .implementation-note {
+            background-color: #e8f4fc;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            margin: 20px 0;
+        }
+        .image-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .image-item {
+            flex: 1;
+            max-width: 200px;
+            margin: 5px;
+        }
+        .image-item img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+        .analysis {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .results-table th {
+            font-size: 1.1em;
+            padding: 5px;
+            text-align: center;
+        }
+        .results-table td {
+            padding: 5px;
+            vertical-align: middle;
+            text-align: center;
+        }
+        .results-table td:first-child {
+            width: 45%;
+            padding-right: 15px;
+        }
+        .results-table img {
+            max-width: 350px;
+            width: 100%;
+            height: auto;
+        }
+        .original-image {
+            margin-bottom: 20px;
+            display: block;
+        }
+        /* Define consistent image styling */
+        .results-table img,
+        .original-image,
+        .image-column img {
+            max-width: 280px;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+        
+        .original-image {
+            margin-bottom: 20px;
+            display: block;
+        }
+        
+        /* Improved table layout for better comparison */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .comparison-table th {
+            font-size: 1.1em;
+            padding: 5px;
+            text-align: center;
+            background-color: #f5f7fa;
+        }
+        
+        .comparison-table td {
+            padding: 5px;
+            vertical-align: middle;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .comparison-table tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .comparison-table img {
+            max-width: 280px;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+        
+        /* Media queries for responsiveness */
+        @media (max-width: 1200px) {
+            .container {
+                width: 98%;
+                padding: 20px;
+            }
+            
+            .comparison-table img {
+                max-width: 220px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .toc-container {
+                width: 200px;
+            }
+            
+            .main-content {
+                margin-left: 200px;
+                width: calc(100% - 200px);
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2.2em;
+            }
+            
+            h2 {
+                font-size: 1.8em;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            
+            .toc-container {
+                width: 100%;
+                height: auto;
+                position: relative;
+                max-height: 250px;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .container {
+                width: 100%;
+                border-radius: 0;
+                margin: 0;
+            }
+            
+            .comparison-table {
+                font-size: 0.9em;
+            }
+            
+            .comparison-table img {
+                max-width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Table of Contents -->
+<div class="toc-container">
+    <h3 class="toc-title">Contents</h3>
+    <ul class="toc-list">
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#part1">Part 1: Inverting the Generator</a></li>
+        <li><a href="#part2">Part 2: Sketch to Image</a></li>
+        <li><a href="#part3">Part 3: Stable Diffusion</a></li>
+        <li><a href="#bells">Bells and Whistles</a></li>
+    </ul>
+</div>
+
+<div class="main-content">
+    <div class="container">
+        <h1 id="project5">Project 5</h1>
+        <h2>Cats Photo Editing</h2>
+        <h4>Author: Keling Yao</h4>
+        <h4>Andrew ID: kennyy</h4>
+        
+        <div class="content">
+            <h2 id="part1">Overview</h2>
+            <p>
+                In this project, there are three parts.
+                <ul>
+                    <li>Part 1: Inverting the Generator: Reconstruct the image from a given latent code.</li>
+                    <li>Part 2: Sketch to Image: Generate a photo from a given sketch.</li>
+                    <li>Part 3: Stable Diffusion: implement SDEdit to edit a given photo with a text prompt using DDPM.</li>
+                </ul>
+            </p>
+            <h2 id="part1">Part 1: Inverting the Generator [30 points]</h2>
+            <h3>(1) Combinations of the losses</h3>
+            <p>
+                In part 1, my loss function is a weighted sum of L1, L2, and perceptual losses. All following results are produced after 1000 iterations, with stylegan in w+ space. I tune the weights for a best configuration.
+            </p>
+
+            <h4>Original data</h4>
+            <img src="data/project/0_data.png" alt="Original Cat" class="original-image">
+
+            <h4>Loss Comparison (Varying Perceptual Loss Weight)</h4>
+            <table class="comparison-table">
+                <tr>
+                    <th>Perceptual loss weight</th>
+                    <th>L1 Loss (L1=10, L2=0)</th>
+                    <th>L2 Loss (L1=0, L2=10)</th>
+                </tr>
+                <tr>
+                    <td>0.001</td>
+                    <td><img src="data/project/0_stylegan_w+_0.001_10_1000.png" alt="Perceptual 0.001, L1"></td>
+                    <td><img src="data/project/0_stylegan_w+_0.001_10_l2_1000.png" alt="Perceptual 0.001, L2"></td>
+                </tr>
+                <tr>
+                    <td>0.01</td>
+                    <td><img src="data/project/0_stylegan_w+_0.01_10_1000.png" alt="Perceptual 0.01, L1"></td>
+                    <td><img src="data/project/0_stylegan_w+_0.01_10_l2_1000.png" alt="Perceptual 0.01, L2"></td>
+                </tr>
+                <tr>
+                    <td>0.1</td>
+                    <td><img src="data/project/0_stylegan_w+_0.1_10_1000.png" alt="Perceptual 0.1, L1"></td>
+                    <td><img src="data/project/0_stylegan_w+_0.1_10_l2_1000.png" alt="Perceptual 0.1, L2"></td>
+                </tr>
+                <tr>
+                    <td>1.0</td>
+                    <td><img src="data/project/0_stylegan_w+_1_10_1000.png" alt="Perceptual 1.0, L1"></td>
+                    <td><img src="data/project/0_stylegan_w+_1_10_l2_1000.png" alt="Perceptual 1.0, L2"></td>
+                </tr>
+            </table>
+
+            <p>
+                <h4>Observation:</h4>
+                Based on these experiments, I found that using a small perceptual loss weight (0.1) with L2 loss weight of 10 and no L1 loss produced the best results. This combination can recover the cat with more details such as the fur texture, the eyes, and the facial features. It is also noticeable that the purple background on the left up corner is more vivid.
+            </p>
+
+            <h3>(2) Different generative models</h3>
+            <p>
+                Using the perceptual loss weight of 0.001 and L2 loss weight of 10 and 1000 iterations, I compared the reconstruction quality between vanilla GAN and StyleGAN in z space.
+            </p>
+            
+            <table class="comparison-table">
+                <tr>
+                    <th>Model</th>
+                    <th>Result</th>
+                </tr>
+                <tr>
+                    <td>Original data</td>
+                    <td><img src="data/project/0_data.png" alt="Original Cat"></td>
+                </tr>
+                <tr>
+                    <td>Vanilla GAN</td>
+                    <td><img src="data/project/0_vanilla_z_0.001_10_l2_1000.png" alt="Vanilla GAN Reconstruction"></td>
+                </tr>
+                <tr>
+                    <td>StyleGAN</td>
+                    <td><img src="data/project/0_stylegan_z_0.001_10_l2_1000.png" alt="StyleGAN Reconstruction"></td>
+                </tr>
+            </table>
+            
+            <p>
+                <h4>Observation:</h4>
+                StyleGAN result is much better than vanilla GAN. The StyleGAN result preserves more details in the cat's fur texture and facial features, while the vanilla GAN result appears more blurry and loses some fine details.
+            </p>
+
+            <h3>(3) Different latent space</h3>
+            <p>
+                Using StyleGAN model with the perceptual loss weight of 0.001 and L2 loss weight of 10 and 1000 iterations, I compared reconstructions in different latent spaces (z, w, and w+).
+            </p>
+            
+            <table class="comparison-table">
+                <tr>
+                    <th>Latent Space</th>
+                    <th>Result</th>
+                </tr>
+                <tr>    
+                    <td>Original data</td>
+                    <td><img src="data/project/2_data.png" alt="Original Cat"></td>
+                </tr>
+                <tr>
+                    <td>z space</td>
+                    <td><img src="data/project/2_stylegan_z_0.001_10_l2_1000.png" alt="z space reconstruction"></td>
+                </tr>
+                <tr>
+                    <td>w space</td>
+                    <td><img src="data/project/2_stylegan_w_0.001_10_l2_1000.png" alt="w space reconstruction"></td>
+                </tr>
+                <tr>
+                    <td>w+ space</td>
+                    <td><img src="data/project/2_stylegan_w+_0.001_10_l2_1000.png" alt="w+ space reconstruction"></td>
+                </tr>
+            </table>
+
+            <p>
+                <h4>Observation:</h4>
+                The w+ and w space results are slightly better than the z space result. The w+ space reconstruction shows the most accurate color reproduction, particularly in the fur color. It also preserves sharper features in the cat's face, especially around the eyes and mouth. The w space result is similar but slightly less detailed, while the z space result appears more blurry and loses some of the fine details.
+                <h4>Run time:</h4>
+                All the experiments are 1000 iterations and take ~30 seconds to run on a Nvidia A6000 GPU.
+            </p>
+
+            
+
+            <h2 id="part2">Part 2: Sketch to Image [40 points]</h2>
+            
+            <p>
+                In this part, I used StyleGAN's w+ space with the parameters (perceptual loss weight = 0.001, L2 loss weight = 10, iterations = 1000) to generate realistic cat images from hand-drawn sketches. This is achieved by optimizing a random noise image to match the sketch in masked regions while maintaining the natural image manifold of the generator.
+            </p>
+            
+            <table class="comparison-table">
+                <tr>
+                    <th>Sketch</th>
+                    <th>Mask</th>
+                    <th>Result</th>
+                </tr>
+                <tr>
+                    <td><img src="data/draw/0_data.png" alt="Sketch 0"></td>
+                    <td><img src="data/draw/0_mask.png" alt="Mask 0"></td>
+                    <td><img src="data/draw/0_stylegan_w+_0.001_1000.png" alt="Result 0"></td>
+                </tr>
+                <tr>
+                    <td><img src="data/draw/1_data.png" alt="Sketch 1"></td>
+                    <td><img src="data/draw/1_mask.png" alt="Mask 1"></td>
+                    <td><img src="data/draw/1_stylegan_w+_0.001_1000.png" alt="Result 1"></td>
+                </tr>
+                <tr>
+                    <td><img src="data/draw/2_data.png" alt="Sketch 2"></td>
+                    <td><img src="data/draw/2_mask.png" alt="Mask 2"></td>
+                    <td><img src="data/draw/2_stylegan_w+_0.001_1000.png" alt="Result 2"></td>
+                </tr>
+                <tr>
+                    <td><img src="data/draw/3_data.png" alt="Sketch 3"></td>
+                    <td><img src="data/draw/3_mask.png" alt="Mask 3"></td>
+                    <td><img src="data/draw/3_stylegan_w+_0.001_1000.png" alt="Result 3"></td>
+                </tr>
+                <tr>
+                    <td><img src="data/draw/4_data.png" alt="Sketch 4"></td>
+                    <td><img src="data/draw/4_mask.png" alt="Mask 4"></td>
+                    <td><img src="data/draw/4_stylegan_w+_0.001_1000.png" alt="Result 4"></td>
+                </tr>
+                <tr>
+                    <td><img src="data/draw/5_data.png" alt="Sketch 5"></td>
+                    <td><img src="data/draw/5_mask.png" alt="Mask 5"></td>
+                    <td><img src="data/draw/5_stylegan_w+_0.001_1000.png" alt="Result 5"></td>
+                </tr>
+                <tr>
+                    <td><img src="data/draw/6_data.png" alt="Sketch 6"></td>
+                    <td><img src="data/draw/6_mask.png" alt="Mask 6"></td>
+                    <td><img src="data/draw/6_stylegan_w+_0.001_1000.png" alt="Result 6"></td>
+                </tr>
+                <tr>
+                    <td><img src="data/draw/7_data.png" alt="Sketch 7"></td>
+                    <td><img src="data/draw/7_mask.png" alt="Mask 7"></td>
+                    <td><img src="data/draw/7_stylegan_w+_0.001_1000.png" alt="Result 7"></td>
+                </tr>
+                <tr>
+                    <td><img src="data/draw/8_data.png" alt="Sketch 8"></td>
+                    <td><img src="data/draw/8_mask.png" alt="Mask 8"></td>
+                    <td><img src="data/draw/8_stylegan_w+_0.001_1000.png" alt="Result 8"></td>
+                </tr>
+            </table>
+            
+            <p>
+                <h4>Observation:</h4>
+                <ul>
+                    <li>The color that are not common in the cat like grey are not generated well.</li>
+                    <li>Sparse masks produced more varied results as less pixels are constrained.</li>
+                    <li>Adding more details in the sketch also contributes to more realistic details, especially in the cat's eyes and facial features.</li>
+                    <li>Higher contrast in the sketch also produces results with sharper features.</li>
+                    <li>Under W+ space, the results from similar sketches tend to converge to similar cat images.</li>
+                </ul>
+                
+            </p>
+            
+            <h2 id="part3">Part 3: Stable Diffusion [30 points]</h2>
+            <p>
+                I implemented the SDEdit approach by incorporating an input image along with a text prompt to guide the diffusion DDPM process.
+            
+            <h3>(1) Parameter Study</h3>
+            <p>
+                I conducted a parameter study on classifier-free guidance strength and timestep to understand how different timesteps and guidance strengths affect the output quality:
+            </p>
+            <div style="text-align: left; margin: 20px 0;">
+                <h4>Original Image</h4>
+                <img src="data/outputs/sketch-cat-512.png" alt="Original Grumpy Cat" style="width: 100%; max-width: 200px;">
+                <p style="font-size: 1.5em;"><strong>Prompt:</strong> "Grumpy cat reimagined as a royal painting"</p>
+            </div>
+            <table class="parameter-table" style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                <tr>
+                    <th style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd;"></th>
+                    <th style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd;"></th>
+                    <th colspan="3" style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd; text-align: center;">Timestep</th>
+                </tr>
+                <tr>
+                    <th style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd;"></th>
+                    <th style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd;"></th>
+                    <th style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd; text-align: center;">500</th>
+                    <th style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd; text-align: center;">600</th>
+                    <th style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd; text-align: center;">700</th>
+                </tr>
+                <tr>
+                    <th rowspan="3" style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd; vertical-align: middle;">Guidance<br>Strength</th>
+                    <th style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd; text-align: center;">15</th>
+                    <td style="padding: 5px; border: 1px solid #ddd; text-align: center;">
+                        <img src="data/outputs/strength_15.0_timestep_500/00000.png" alt="Timestep 500, Guidance 15" style="width: 100%; max-width: 200px;">
+                    </td>
+                    <td style="padding: 5px; border: 1px solid #ddd; text-align: center;">
+                        <img src="data/outputs/strength_15.0_timestep_600/00000.png" alt="Timestep 600, Guidance 15" style="width: 100%; max-width: 200px;">
+                    </td>
+                    <td style="padding: 5px; border: 1px solid #ddd; text-align: center;">
+                        <img src="data/outputs/strength_15.0_timestep_700/00000.png" alt="Timestep 700, Guidance 15" style="width: 100%; max-width: 200px;">
+                    </td>
+                </tr>
+                <tr>
+                    <th style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd; text-align: center;">25</th>
+                    <td style="padding: 5px; border: 1px solid #ddd; text-align: center;">
+                        <img src="data/outputs/strength_25.0_timestep_500/00000.png" alt="Timestep 500, Guidance 25" style="width: 100%; max-width: 200px;">
+                    </td>
+                    <td style="padding: 5px; border: 1px solid #ddd; text-align: center;">
+                        <img src="data/outputs/strength_25.0_timestep_600/00000.png" alt="Timestep 600, Guidance 25" style="width: 100%; max-width: 200px;">
+                    </td>
+                    <td style="padding: 5px; border: 1px solid #ddd; text-align: center;">
+                        <img src="data/outputs/strength_25.0_timestep_700/00000.png" alt="Timestep 700, Guidance 25" style="width: 100%; max-width: 200px;">
+                    </td>
+                </tr>
+                <tr>
+                    <th style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd; text-align: center;">35</th>
+                    <td style="padding: 5px; border: 1px solid #ddd; text-align: center;">
+                        <img src="data/outputs/strength_35.0_timestep_500/00000.png" alt="Timestep 500, Guidance 35" style="width: 100%; max-width: 200px;">
+                    </td>
+                    <td style="padding: 5px; border: 1px solid #ddd; text-align: center;">
+                        <img src="data/outputs/strength_35.0_timestep_600/00000.png" alt="Timestep 600, Guidance 35" style="width: 100%; max-width: 200px;">
+                    </td>
+                    <td style="padding: 5px; border: 1px solid #ddd; text-align: center;">
+                        <img src="data/outputs/strength_35.0_timestep_700/00000.png" alt="Timestep 700, Guidance 35" style="width: 100%; max-width: 200px;">
+                    </td>
+                </tr>
+            </table>
+            
+            <h3>Another example</h3>
+            <div style="text-align: left; margin: 20px 0;">
+                <h4>Original Image</h4>
+                <img src="data/outputs/panda.png" alt="Original Grumpy Cat" style="width: 100%; max-width: 200px;">
+                <p style="font-size: 1.5em;"><strong>Prompt:</strong> "A cute panda sitting peacefully in a lush bamboo forest, holding and eating a thick stalk of bamboo with its paws, realistic lighting and fur texture, high detail, natural environment"</p>
+            </div>
+            <table class="parameter-table" style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                <tr>
+                    <th style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd;"></th>
+                    <th style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd;"></th>
+                    <th colspan="3" style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd; text-align: center;">Timestep</th>
+                </tr>
+                <tr>
+                    <th style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd;"></th>
+                    <th style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd;"></th>
+                    <th style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd; text-align: center;">500</th>
+                    <th style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd; text-align: center;">600</th>
+                    <th style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd; text-align: center;">700</th>
+                </tr>
+                <tr>
+                    <th rowspan="3" style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd; vertical-align: middle;">Guidance<br>Strength</th>
+                    <th style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd; text-align: center;">15</th>
+                    <td style="padding: 5px; border: 1px solid #ddd; text-align: center;">
+                        <img src="data/outputs/strength_15.0_timestep_500/00000_panda.png.png" alt="Timestep 500, Guidance 15" style="width: 100%; max-width: 200px;">
+                    </td>
+                    <td style="padding: 5px; border: 1px solid #ddd; text-align: center;">
+                        <img src="data/outputs/strength_15.0_timestep_600/00000_panda.png.png" alt="Timestep 600, Guidance 15" style="width: 100%; max-width: 200px;">
+                    </td>
+                    <td style="padding: 5px; border: 1px solid #ddd; text-align: center;">
+                        <img src="data/outputs/strength_15.0_timestep_700/00000_panda.png.png" alt="Timestep 700, Guidance 15" style="width: 100%; max-width: 200px;">
+                    </td>
+                </tr>
+                <tr>
+                    <th style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd; text-align: center;">25</th>
+                    <td style="padding: 5px; border: 1px solid #ddd; text-align: center;">
+                        <img src="data/outputs/strength_25.0_timestep_500/00000_panda.png.png" alt="Timestep 500, Guidance 25" style="width: 100%; max-width: 200px;">
+                    </td>
+                    <td style="padding: 5px; border: 1px solid #ddd; text-align: center;">
+                        <img src="data/outputs/strength_25.0_timestep_600/00000_panda.png.png" alt="Timestep 600, Guidance 25" style="width: 100%; max-width: 200px;">
+                    </td>
+                    <td style="padding: 5px; border: 1px solid #ddd; text-align: center;">
+                        <img src="data/outputs/strength_25.0_timestep_700/00000_panda.png.png" alt="Timestep 700, Guidance 25" style="width: 100%; max-width: 200px;">
+                    </td>
+                </tr>
+                <tr>
+                    <th style="padding: 10px; background-color: #f0f0f0; border: 1px solid #ddd; text-align: center;">35</th>
+                    <td style="padding: 5px; border: 1px solid #ddd; text-align: center;">
+                        <img src="data/outputs/strength_35.0_timestep_500/00000_panda.png.png" alt="Timestep 500, Guidance 35" style="width: 100%; max-width: 200px;">
+                    </td>
+                    <td style="padding: 5px; border: 1px solid #ddd; text-align: center;">
+                        <img src="data/outputs/strength_35.0_timestep_600/00000_panda.png.png" alt="Timestep 600, Guidance 35" style="width: 100%; max-width: 200px;">
+                    </td>
+                    <td style="padding: 5px; border: 1px solid #ddd; text-align: center;">
+                        <img src="data/outputs/strength_35.0_timestep_700/00000_panda.png.png" alt="Timestep 700, Guidance 35" style="width: 100%; max-width: 200px;">
+                    </td>
+                </tr>
+            </table>
+
+
+            <h3>(2) Different amounts of noise added to the input</h3>
+            <p>
+                I conducted a parameter study on the amount of noise added to the input to understand how different amounts of noise affect the output quality:
+            </p>
+
+            <div class="image-row">
+                <div class="image-column">
+                    <h5>noise std = 0.5</h5>
+                    <img src="data/outputs/strength_35.0_timestep_600/00000_std0.5_panda.png.png" alt="Half Noise">
+                </div>
+                <div class="image-column">
+                    <h5>noise std = 1</h5>
+                    <img src="data/outputs/strength_35.0_timestep_600/00000_panda.png.png" alt="Normal Noise">
+                </div>
+                <div class="image-column">
+                    <h5>noise std = 2</h5>
+                    <img src="data/outputs/strength_35.0_timestep_600/00000_std2_panda.png.png" alt="Double Noise">
+                </div>
+            </div>
+            
+            <p>
+                <h4>Observation:</h4>
+                <ul></ul>
+                    <li>If the noise std is small, the editing is closer to the original sketch.</li>
+                    <li>If the noise std is large, the editing is more varies, and too much noise can lead to the image looking fake and noisy.</li>
+                </ul>
+            </p>
+
+            <h2 id="bells">Bells and Whistles</h2>
+            <h3>(1) Interpolate between 2 latent codes</h3>
+            <p>
+                Below is the interpolation between the 0th and 1st data and the 2nd and 3rd data in cat dataset.
+            </p>
+
+            <div class="image-row">
+                <div class="image-column">
+                    <h5>Interpolation 1</h5>
+                    <img src="data/interpolate/1_stylegan_w+.gif" alt="Interpolation 1">
+                </div>
+                <div class="image-column">
+                    <h5>Interpolation 2</h5>
+                    <img src="data/interpolate/3_stylegan_w+.gif" alt="Interpolation 2">
+                </div>
+            </div>
+
+            <div class="footer">
+                &copy; 2025 Kenny Yao | Course 16726 | Image-Based Synthesis
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // JavaScript to handle scroll behavior and active state of TOC links
+    document.addEventListener("DOMContentLoaded", function() {
+        const sections = document.querySelectorAll("h1[id], h2[id]");
+        const tocLinks = document.querySelectorAll(".toc-list a");
+        
+        function onScroll() {
+            let currentSection = "";
+            
+            sections.forEach(section => {
+                const sectionTop = section.getBoundingClientRect().top;
+                
+                if (sectionTop < 100) {
+                    currentSection = "#" + section.getAttribute("id");
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove("active");
+                if (link.getAttribute("href") === currentSection) {
+                    link.classList.add("active");
+                }
+            });
+        }
+        
+        // Smooth scrolling when clicking on TOC links
+        tocLinks.forEach(link => {
+            link.addEventListener("click", function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute("href");
+                const targetSection = document.querySelector(targetId);
+                
+                window.scrollTo({
+                    top: targetSection.offsetTop - 50,
+                    behavior: "smooth"
+                });
+            });
+        });
+        
+        window.addEventListener("scroll", onScroll);
+    });
+</script>
+
+</body>
+</html>

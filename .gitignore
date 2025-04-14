@@ -9,3 +9,6 @@ HW/16726_s25_hw1-main/data/
 HW/16726_s25_hw2/results
 HW/16726_s25_hw2/data
 *.zip
+
+HW/hw5_starter/stable_diffusion/models
+HW/hw5_starter/gan/data_weight

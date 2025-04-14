@@ -39,6 +39,7 @@ def main():
 
     # Load the prompt
     prompt = opt.prompt
+    print(prompt)
     assert prompt is not None
 
     # Load the input image
@@ -47,7 +48,7 @@ def main():
 
     # Load the model
     config = OmegaConf.load(f"configs/inference.yaml")
-    model = load_model_from_config(config, f"models/model.ckpt").to(device)
+    model = load_model_from_config(config, f"models/v1-5-pruned-emaonly.ckpt").to(device)
 
     # Define the timesteps
     timesteps = np.asarray(list(range(0, opt.num_timesteps)))
@@ -57,6 +58,8 @@ def main():
     # Alphas for DDPM
     alphas = (1. - model.betas)
     alpha_cumprods = model.alphas_cumprod
+    print(alpha_cumprods.shape)
+    print(opt.num_timesteps)
     
     #############
     ####TODO#####
@@ -72,19 +75,25 @@ def main():
         cond = model.get_learned_conditioning([prompt])
         
         # TODO: Generate noise tensor for the input image
-        
+        # Generate noise with controllable scale
+        # You can adjust the noise_scale parameter to control the amount of noise
+        noise_scale = 1  # Default scale, adjust this value to change noise amount
+        noise = noise_scale * torch.randn_like(init_latent)
         # TODO: Add noise to the latent space and get the encoded latent state
+        N = opt.num_timesteps
+        t_enc = N - 1
+        alpha_bar_t = alpha_cumprods[t_enc]
+        init_latent = torch.sqrt(alpha_bar_t) * init_latent + torch.sqrt(1 - alpha_bar_t) * noise
 
         # TODO: Reverse the timesteps for denoising
-        reversed_time_range = 
+        reversed_time_range = reversed(range(1, t_enc + 1))
 
         # TODO: Initialize the latent state for DDPM sampling
-        latent = 
+        latent = init_latent
         # Loop over the reversed time steps
         for i, timestep in tqdm(enumerate(reversed_time_range)):            
             # Timestep tensor for the current step 
             timestep = torch.full(size=(1,), fill_value=timestep,  device=device, dtype=torch.long)
-            
             # TODO: Get the score estimator for the conditional and unconditional guidance
             # Hint 1: Use the apply_model function which returns the score estimator for the conditional and unconditional guidance
             #      The function takes in three arguments: x_in, t_in, c_in
@@ -95,13 +104,37 @@ def main():
             #         So you need to repeat the latent and timestep tensors for the two guidance scores as well
             # Hint 3: Use the chunk function to separate the score estimator after applying the model
             #         to separate the conditional and unconditional guidance
-            e_t_uncond, e_t_cond = 
-            
+            x_in = torch.cat([latent, latent], dim=0)
+            t_in = torch.cat([timestep, timestep], dim=0)
+            c_in = torch.cat([uncond, cond], dim=0)
+            eps = model.apply_model(x_in, t_in, c_in)
+            eps = eps.chunk(2, dim=0)
+            e_t_uncond, e_t_cond = eps[0], eps[1]
+
             # TODO: Calculate the classifier-free diffusion guidance score
-            e_t = 
+            e_t = e_t_uncond + opt.strength * (e_t_cond - e_t_uncond)
 
             # TODO: Update the latent state using DDPM Sampling
-            latent = 
+            # Extract constants
+            alpha_t = alphas[timestep]
+            alpha_bar_t = alpha_cumprods[timestep]
+
+            # σ_t (noise scale for DDPM sampling)
+            if timestep > 1:
+                z = torch.randn_like(latent)
+            else:
+                z = torch.zeros_like(latent)
+            sigma_t = (
+                ((1 - alpha_cumprods[timestep - 1]) / (1 - alpha_bar_t) * (1 - alpha_t))
+                .sqrt()
+            )
+
+            # DDPM sampling step
+            latent = (
+                1 / alpha_t.sqrt()
+                * (latent - (1 - alpha_t) / (1 - alpha_bar_t).sqrt() * e_t)
+                + sigma_t * z
+            )
 
         # Get the decoded sample from the first stage
         output_images = model.decode_first_stage(latent)

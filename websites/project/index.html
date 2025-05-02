@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="Deformable Neural Radiance Fields creates free-viewpoint portraits (nerfies) from casually captured videos.">
+  <meta name="keywords" content="Nerfies, D-NeRF, NeRF">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panorama generation with region based control</title>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-PYVRSFMDRL');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+
+  <!-- MathJax for math formula support -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <!-- <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="navbar-menu">
+    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+      <a class="navbar-item" href="https://keunhong.com">
+      <span class="icon">
+          <i class="fas fa-home"></i>
+      </span>
+      </a>
+
+      <div class="navbar-item has-dropdown is-hoverable">
+        <a class="navbar-link">
+          More Research
+        </a>
+        <div class="navbar-dropdown">
+          <a class="navbar-item" href="https://hypernerf.github.io">
+            HyperNeRF
+          </a>
+          <a class="navbar-item" href="https://nerfies.github.io">
+            Nerfies
+          </a>
+          <a class="navbar-item" href="https://latentfusion.github.io">
+            LatentFusion
+          </a>
+          <a class="navbar-item" href="https://photoshape.github.io">
+            PhotoShape
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div> -->
+</nav>
+
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">Panorama Generation with Region Based Control</h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="mailto:yinghaoz@andrew.cmu.edu">Yinghao Zhang</a>,</span>
+            <span class="author-block">
+              <a href="mailto:kennyy@andrew.cmu.edu">Keling Yao</a>,</span>
+            <span class="author-block">
+              <a href="mailto:silongy@andrew.cmu.edu">Silong Yong</a>
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">Carnegie Mellon University</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <span class="link-block">
+                <a href="https://github.com/KennyYao2001/panorama_generation_with_region-based_mask"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                  </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <img src="./static/images/teaser.png"
+        class="interpolation-image"
+        alt="Interpolate start reference image."/>
+      <h2 class="subtitle has-text-centered">
+        A generated panorama image with region based control. The background is an aerial view of Manhattan, New York City. 
+        The foreground is an aerial view of a forest park.
+      </h2>
+    </div>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+          We present a pipeline for generating panorama images with region-based control using a 
+          pre-trained diffusion model, inspired by MultiDiffusion.
+          Our approach leverages the ability of diffusion models to denoise "average" images - linear combinations of two images. 
+          This enables the generation of panorama images by denoising an average image of the regions to be combined.
+          </p>
+          <p>
+          While MultiDiffusion can generate either panorama or region-based images, it struggles to achieve both simultaneously. 
+          Specifically, it fails to fully adhere to region masks when generating panorama images with region-based control.
+          </p>
+          <p>
+          We propose a refined pipeline that addresses these limitations by: 
+          1) generating panorama images from the center outward instead of sequentially, and 
+          2) denoising patches dependently rather than independently.
+          Our results demonstrate that the proposed method produces high-quality panorama images with consistent region-based control, 
+          overcoming the limitations of MultiDiffusion.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract. -->
+
+    <!-- Paper video. -->
+    <!-- <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Video</h2>
+        <div class="publication-video">
+          <iframe src="https://www.youtube.com/embed/MrKrnHhk8IA?rel=0&amp;showinfo=0"
+                  frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div> -->
+    <!--/ Paper video. -->
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+
+    <div class="columns is-centered">
+
+      <!-- Visual Effects. -->
+      <!-- <div class="column">
+        <div class="content">
+          <h2 class="title is-3">Visual Effects</h2>
+          <p>
+            Using <i>nerfies</i> you can create fun visual effects. This Dolly zoom effect
+            would be impossible without nerfies since it would require going through a wall.
+          </p>
+          <video id="dollyzoom" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/dollyzoom-stacked.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+      </div> -->
+      <!--/ Visual Effects. -->
+
+      <!-- Matting. -->
+      <!-- <div class="column">
+        <h2 class="title is-3">Matting</h2>
+        <div class="columns is-centered">
+          <div class="column content">
+            <p>
+              As a byproduct of our method, we can also solve the matting problem by ignoring
+              samples that fall outside of a bounding box during rendering.
+            </p>
+            <video id="matting-video" controls playsinline height="100%">
+              <source src="./static/videos/matting.mp4"
+                      type="video/mp4">
+            </video>
+          </div>
+
+        </div>
+      </div> -->
+    </div>
+
+    <!-- Related works. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Related works</h2>
+
+        <h3 class="title is-4">MultiDiffusion</h3>
+        <div class="content has-text-justified">
+          <p>
+            <a href="https://multidiffusion.github.io/">MultiDiffusion</a> is a training-free method for 
+            generating panorama images. Their basic idea is to take multiple overlapping patches from the 
+            noisy input image and do one denoising step on each of them and then combine them by averaging.
+            This is a very simple and effective method for generating panorama images.
+          </p>
+          <img src="./static/images/baseline-panorama.png"
+            class="interpolation-image"
+            alt="Interpolate start reference image."/>
+          <figcaption class="has-text-centered" style="font-family: sans-serif;">
+            The pipeline of MultiDiffusion. The input image is divided into overlapping patches and each patch is denoised independently.
+            The denoised patches are then averaged to form the final panorama image. 
+          </figcaption><p></p>
+          <p>
+            MultiDiffusion also proposes a method for region-based control. Region-based control means that masks of multiple 
+            foreground objects are provided and the user can control the shape and position of each object in the final image.
+            The idea is to denoise the foreground and background 
+            separately where the foreground is denoised with a random background, so that the foreground objects have tight boundary 
+            as the masks have.
+          </p>
+          <img src="./static/images/baseline-region-1.png"
+            class="interpolation-image"
+            alt="Interpolate start reference image."/>
+          <figcaption class="has-text-centered">
+            The region-based text2image generation. The input is a text prompt for the background, a region mask and a 
+            text prompt for each foreground object. 
+          </figcaption><p></p>
+          <img src="./static/images/baseline-region-2.png"
+            class="interpolation-image"
+            alt="Interpolate start reference image."/>
+          <figcaption class="has-text-centered">
+            When generating an image with region-based control, the background and the foreground are denoised separately.
+            Then the foreground is blended into the background using the region mask.
+          </figcaption><p></p>
+        </div>
+        
+      </div>
+    </div>
+    <!--/ Related works. -->
+
+    <!-- Methods. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Methods</h2>
+        <div class="content has-text-justified">
+          <p>
+            Built on the MultiDiffusion framework, we proposed a refined pipeline for generating panorama images with region-based control.
+            To alleviate the inconsistency between different patches, we made two modifications to the original pipeline.
+          </p>
+        </div>
+
+        <h3 class="title is-4">Dependent Denoising across Patches</h3>
+        <div class="content has-text-justified">
+          <p>
+            In MultiDiffusion, the patches are denoised independently. Hence, different patches may be denoised to different 
+            directions, leading to inconsistent results. For example, the patches on the left denoise the sky to be sunny, 
+            while the patches on the right denoise the sky to be cloudy. Then we will have a panorama image with 
+            inconsistent sky. To solve this problem, we propose to denoise the patches dependently. We only do this in early 
+            denoising steps.
+          </p>
+          <img src="./static/images/method-dependency.png"
+            class="interpolation-image"
+            alt="Interpolate start reference image."/>
+          <figcaption class="has-text-centered">
+            The illustration of dependent denoising. The patches are denoised dependently in the early steps and 
+            independently in the later steps.
+          </figcaption><p></p>
+
+          <p>
+            Formally, let \(L\) be the image latent at some time step and \(L_i\) be the \(i\)-th patch of the image latent. 
+            Let \(\Phi\) be the pre-trained denoising model. The denoising process of time step \(t\) is: for each patch \(i\), we have:
+            \[
+            L_i \leftarrow \alpha \Phi\left( L_i \right) + (1 - \alpha) L_i
+            \]
+            where \(\alpha\) is a hyper-parameter that controls the strength of the denoising.
+            Note, \(L_i\) and \(L_j\) may have overlapping pixels, so the denoising of \(L_i\) may affect the denoising of \(L_j\). 
+          </p>
+          <p>
+            As MultiDiffusion does, we also need to record the denoised patches \(\{P_i\}\) and 
+            their corresponding masks \(\{m_i\}\). After we denosie 
+            all the patches at time step \(t\), we can combine them to form the denoised image latent \(L\): 
+            \[
+            L \leftarrow \frac{ \sum_i P_i \cdot m_i }{\sum_i m_i}
+            \]
+            This is the same as the "average" operation in MultiDiffusion.
+          </p>
+          <p>
+            In practice, if we do a 50-steps generation, we can do the dependent denoising for the first 10 steps and 
+            then switch to independent denoising. 10 steps is enough to make the patches consistent. We find \(\alpha = 0.2\) works 
+            well in most cases.
+          </p>
+          <p>
+            The number of dependent denoising steps and the value of \(\alpha\) should be limited to a small value,
+            otherwise the denoising will be too strong and the results will be over-smoothed. 
+          </p>
+        </div>
+
+        <h3 class="title is-4">Center-to-Side Patch Order</h3>
+        <div class="content has-text-justified">
+          <p>
+            In MultiDiffusion, the order of denoising the patches does not matter because they are denoised independently.
+            However, when we do dependent denoising, the order of denoising the patches matters. 
+            If we denoise the patches from left to right, the patch on the right has only little information from the left patch. 
+            Hence, we start denoising from the middle patch and then go to the left and right patches.
+          </p>
+          <p>
+            Specifically, the only modifications is that we sort the patches by their distance to the center of the image 
+            in an increasing order. 
+          </p>
+          <img src="./static/images/method-order.png"
+            class="interpolation-image"
+            alt="Interpolate start reference image."/>
+          <figcaption class="has-text-centered">
+            The illustration of center-to-side patch order. 
+            The patches close to the center are denoised first. 
+          </figcaption><p></p>
+        </div>
+        
+        <br/>
+
+      </div>
+    </div>
+    <!--/ Methods. -->
+
+    <!-- Experiments -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Experiments</h2>
+
+        <p>
+          We use <a href="https://huggingface.co/stabilityai/stable-diffusion-2-1-base">Stable Diffusion 2.1</a> as our pre-trained 
+          base model. The model is trained on 512x512 images and we use it to generate 512x2048 panorama images. 
+          The stride of the patches is 64 pixels. 
+        </p>
+        <p></p>
+
+        <!-- <h3 class="title is-4">MultiDiffusion</h3> -->
+        <div class="content has-text-justified">
+          <div class="columns is-centered">
+            <div class="column">
+              <div class="content has-text-centered">
+                <p> </p>
+                <h3 class="title is-4">Case 1</h3>
+                <p class="subtitle">
+                  Background prompt: "A vast desert landscape with rolling sand dunes, scattered dry vegetation"
+                </p >
+                <p class="subtitle">
+                  Foreground prompt: "A vast corn field stretching to the horizon, golden stalks swaying in the breeze"
+                </p >
+                Masks:
+                  <img src="./static/images/polygon.png" alt="Mask" style="height: 50px; margin-left: 10px; vertical-align: middle;">
+                </p >
+                
+                <div id="example1" class="bal-container-new">
+                  <div class="bal-after">
+                    <img src="./static/images/case1.jpg">
+                    <div class="bal-afterPosition afterLabel">Ours</div>
+                  </div>
+                  <div class="bal-before">
+                    <div class="bal-before-inset">
+                      <img src="./static/images/case1_base.jpg">
+                      <div class="bal-beforePosition beforeLabel ">MultiDiffusion</div>
+                    </div>
+                  </div>
+                  <div class="bal-handle">
+                    <span class="handle-left-arrow"></span>
+                    <span class="handle-right-arrow"></span>
+                  </div>
+                </div>
+                <p></p>
+              </div>
+              <p>
+                This case demonstrates our model's ability to better region mask following and blending.
+              </p>
+              <div class="content has-text-centered">
+                <p></p>
+                <h3 class="title is-4">Case 2</h3>
+                <p class="subtitle">
+                  Background prompt: "Aerial view of Manhattan, New York City, dense skyscrapers, grid-like street pattern"
+                </p >
+                <p class="subtitle">
+                  Foreground prompt: "Aerial view of a forest park, lush green trees, small lakes, recreational areas, dense canopy, detailed foliage
+                  "
+                </p >
+                Masks:
+                  <img src="./static/images/circle.jpg" alt="Mask" style="height: 50px; margin-left: 10px; vertical-align: middle;">
+                </p >
+                
+                <div id="example2" class="bal-container-new">
+                  <div class="bal-after">
+                    <img src="./static/images/case2.jpg">
+                    <div class="bal-afterPosition afterLabel">Ours</div>
+                  </div>
+                  <div class="bal-before">
+                    <div class="bal-before-inset">
+                      <img src="./static/images/case2_base.jpg">
+                      <div class="bal-beforePosition beforeLabel ">MultiDiffusion</div>
+                    </div>
+                  </div>
+                  <div class="bal-handle">
+                    <span class="handle-left-arrow"></span>
+                    <span class="handle-right-arrow"></span>
+                  </div>
+                </div>
+                <p></p>
+              </div>
+              <p>
+                This case demonstrates our model's ability to better viewpoint consistency and blending.
+              </p>
+              <div class="content has-text-centered">
+                <p></p>
+                <h3 class="title is-4">Case 3</h3>
+                <p class="subtitle">
+                  Background prompt: "a vast Martian landscape with red rocky terrain"
+                </p >
+                <p class="subtitle">
+                  Foreground prompt: "realistic and highly detailed rows of houses with detailed architecture"
+                </p >
+                Masks:
+                  <img src="./static/images/polygon.png" alt="Mask" style="height: 50px; margin-left: 10px; vertical-align: middle;">
+                </p >
+                
+                <div id="example3" class="bal-container-new">
+                  <div class="bal-after">
+                    <img src="./static/images/case3.jpg">
+                    <div class="bal-afterPosition afterLabel">Ours</div>
+                  </div>
+                  <div class="bal-before">
+                    <div class="bal-before-inset">
+                      <img src="./static/images/case3_base.jpg">
+                      <div class="bal-beforePosition beforeLabel ">MultiDiffusion</div>
+                    </div>
+                  </div>
+                  <div class="bal-handle">
+                    <span class="handle-left-arrow"></span>
+                    <span class="handle-right-arrow"></span>
+                  </div>
+                </div>
+                <p></p>
+              </div>
+              <p>
+                This case demonstrates our model's ability to better viewpoint consistency but denoise too much on the details of the background.
+              </p>
+              <div class="content has-text-centered">
+                <p></p>
+                <h3 class="title is-4">Case 4</h3>
+                <p class="subtitle">
+                  Background prompt: "Aerial view of snow-covered landscape, pristine white snow, winter wonderland"
+                </p >
+                <p class="subtitle">
+                  Foreground prompt: "Realistic and highly detailed inside view of an active volcano crater"
+                </p >
+                Masks:
+                  <img src="./static/images/circle.jpg" alt="Mask" style="height: 50px; margin-left: 10px; vertical-align: middle;">
+                </p >
+                
+                <div id="example4" class="bal-container-new">
+                  <div class="bal-after">
+                    <img src="./static/images/case4.jpg">
+                    <div class="bal-afterPosition afterLabel">Ours</div>
+                  </div>
+                  <div class="bal-before">
+                    <div class="bal-before-inset">
+                      <img src="./static/images/case4_base.jpg">
+                      <div class="bal-beforePosition beforeLabel ">MultiDiffusion</div>
+                    </div>
+                  </div>
+                  <div class="bal-handle">
+                    <span class="handle-left-arrow"></span>
+                    <span class="handle-right-arrow"></span>
+                  </div>
+                </div>
+                <p></p>
+              </div>
+              <p>
+                This case demonstrates our model's ability to better viewpoint consistency and better blending and region generations.
+              </p>
+              <div class="content has-text-centered">
+                <p></p>
+                <h3 class="title is-4">Case 5</h3>
+                <p class="subtitle">
+                  Background prompt: "A natural night sky, stars twinkling in the darkness"
+                </p >
+                <p class="subtitle">
+                  Foreground prompt: "A massive door floating in the starry night sky"
+                </p >
+                Masks:
+                  <img src="./static/images/polygon.png" alt="Mask" style="height: 50px; margin-left: 10px; vertical-align: middle;">
+                </p >
+                
+                <div id="example5" class="bal-container-new">
+                  <div class="bal-after">
+                    <img src="./static/images/case5.jpg">
+                    <div class="bal-afterPosition afterLabel">Ours</div>
+                  </div>
+                  <div class="bal-before">
+                    <div class="bal-before-inset">
+                      <img src="./static/images/case5_base.jpg">
+                      <div class="bal-beforePosition beforeLabel ">MultiDiffusion</div>
+                    </div>
+                  </div>
+                  <div class="bal-handle">
+                    <span class="handle-left-arrow"></span>
+                    <span class="handle-right-arrow"></span>
+                  </div>
+                </div>
+                <p></p>
+              </div>
+              <p>
+                This case demonstrates our model's ability to better blending and semantics following.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--/ Experiments -->
+
+    <!-- Ablation. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Ablation Study</h2>
+        <div class="content has-text-centered">
+          <h3 class="title is-4">Ablation: w/o center-to-side</h3>
+          <div id="ab1" class="bal-container-new">
+          <div class="bal-after">
+          <img src="./static/images/case1.jpg">
+          <div class="bal-afterPosition afterLabel">Ours</div>
+          </div>
+          <div class="bal-before">
+          <div class="bal-before-inset">
+          <img src="./static/images/case1_wo_center.png">
+         <div class="bal-beforePosition beforeLabel ">w/o center-to-side</div>
+         </div>
+         </div>
+         <div class="bal-handle">
+          <span class="handle-left-arrow"></span>
+          <span class="handle-right-arrow"></span>
+          </div>
+          </div>
+       
+          <div id="ab2" class="bal-container-new">
+           <div class="bal-after">
+           <img src="./static/images/case2.jpg">
+           <div class="bal-afterPosition afterLabel">Ours</div>
+           </div>
+           <div class="bal-before">
+           <div class="bal-before-inset">
+           <img src="./static/images/case2_wo_center.png">
+          <div class="bal-beforePosition beforeLabel ">w/o center-to-side</div>
+          </div>
+          </div>
+          <div class="bal-handle">
+           <span class="handle-left-arrow"></span>
+           <span class="handle-right-arrow"></span>
+           </div>
+           </div>
+       
+           <div id="ab3" class="bal-container-new">
+             <div class="bal-after">
+             <img src="./static/images/case3.jpg">
+             <div class="bal-afterPosition afterLabel">Ours</div>
+             </div>
+             <div class="bal-before">
+             <div class="bal-before-inset">
+             <img src="./static/images/case3_wo_center.png">
+            <div class="bal-beforePosition beforeLabel ">w/o center-to-side</div>
+            </div>
+            </div>
+            <div class="bal-handle">
+             <span class="handle-left-arrow"></span>
+             <span class="handle-right-arrow"></span>
+             </div>
+             </div>
+          <p></p >
+         </div>
+          <p>
+           Without the center-to-side sliding technique, the model struggles at providing viewpoint consistent generation (check out the top left corner of the desert and Manhattan) and at blending the foreground and background (check out the edges of the house on Mars).
+         </p >
+       
+       
+         <div class="content has-text-centered">
+           <h3 class="title is-4">Ablation: w/o dependency</h3>
+           <div id="ab4" class="bal-container-new">
+           <div class="bal-after">
+           <img src="./static/images/case1.jpg">
+           <div class="bal-afterPosition afterLabel">Ours</div>
+           </div>
+           <div class="bal-before">
+           <div class="bal-before-inset">
+           <img src="./static/images/case1_wo_dep.png">
+          <div class="bal-beforePosition beforeLabel ">w/o dependency</div>
+          </div>
+          </div>
+          <div class="bal-handle">
+           <span class="handle-left-arrow"></span>
+           <span class="handle-right-arrow"></span>
+           </div>
+           </div>
+       
+           <div id="ab5" class="bal-container-new">
+            <div class="bal-after">
+            <img src="./static/images/case2.jpg">
+            <div class="bal-afterPosition afterLabel">Ours</div>
+            </div>
+            <div class="bal-before">
+            <div class="bal-before-inset">
+            <img src="./static/images/case2_wo_dep.png">
+           <div class="bal-beforePosition beforeLabel ">w/o dependency</div>
+           </div>
+           </div>
+           <div class="bal-handle">
+            <span class="handle-left-arrow"></span>
+            <span class="handle-right-arrow"></span>
+            </div>
+            </div>
+       
+            <div id="ab6" class="bal-container-new">
+              <div class="bal-after">
+              <img src="./static/images/case3.jpg">
+              <div class="bal-afterPosition afterLabel">Ours</div>
+              </div>
+              <div class="bal-before">
+              <div class="bal-before-inset">
+              <img src="./static/images/case3_wo_dep.png">
+             <div class="bal-beforePosition beforeLabel ">w/o dependency</div>
+             </div>
+             </div>
+             <div class="bal-handle">
+              <span class="handle-left-arrow"></span>
+              <span class="handle-right-arrow"></span>
+              </div>
+              </div>
+           <p></p >
+          </div>
+           <p>
+             Without the dependency-aware generation, the model mostly struggles at providing viewpoint  consistency (check out the top left corner of Mars and desert and the region above the forest in Manhattan).
+          </p >
+      </div>
+    </div>
+    <!--/ Ablation. -->
+
+  </div>
+</section>
+
+
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <a class="icon-link" href="https://github.com/KennyYao2001/panorama_generation_with_region-based_mask" class="external-link" disabled>
+        <i class="fab fa-github"></i>
+      </a>
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            Template borrowed from <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+        
+<script src="static/js/script.js"></script>
+<script>
+  new BeforeAfter({
+    id: "#example1"
+  });
+  new BeforeAfter({
+    id: "#example2"
+  });
+  new BeforeAfter({
+    id: "#example3"
+  });
+  new BeforeAfter({
+    id: "#example4"
+  });
+  new BeforeAfter({
+    id: "#example5"
+  });
+  new BeforeAfter({
+    id: "#ab1"
+  });
+  new BeforeAfter({
+    id: "#ab2"
+  });
+  new BeforeAfter({
+    id: "#ab3"
+  });
+  new BeforeAfter({
+    id: "#ab4"
+  });
+  new BeforeAfter({
+    id: "#ab5"
+  });
+  new BeforeAfter({
+    id: "#ab6"
+  });
+</script>
+
+
+</body>
+</html>
